@@ -19,4 +19,8 @@ SET(CMAKE_C_FLAGS_DEBUG "-g -O3")
 SET(CMAKE_CXX_FLAGS_RELEASE "-O3")
 SET(CMAKE_C_FLAGS_RELEASE "-O3")
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 add_subdirectory(src/server)
+add_subdirectory(src/app)
+add_subdirectory(src/modules)
