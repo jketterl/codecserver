@@ -1,3 +1,4 @@
+#include "config.h"
 #include "cli.hpp"
 #include "handshake.pb.h"
 #include "request.pb.h"
@@ -27,8 +28,8 @@ int Cli::main(int argc, char** argv) {
         return 1;
     }
 
-    void* buffer = malloc(1024);
-    int rc = recv(sock, buffer, 1024, 0);
+    void* buffer = malloc(BUFFER_SIZE);
+    int rc = recv(sock, buffer, BUFFER_SIZE, 0);
     if (rc == -1) {
         std::cerr << "handshake receive failure\n";
         return 1;
@@ -56,8 +57,8 @@ int Cli::main(int argc, char** argv) {
 
     free(buffer);
 
-    buffer = malloc(1024);
-    rc = recv(sock, buffer, 1024, 0);
+    buffer = malloc(BUFFER_SIZE);
+    rc = recv(sock, buffer, BUFFER_SIZE, 0);
     if (rc == -1) {
         std::cerr << "response error\n";
         return 1;

@@ -1,3 +1,4 @@
+#include "config.h"
 #include "connection.hpp"
 #include "handshake.pb.h"
 #include "request.pb.h"
@@ -35,9 +36,9 @@ void Connection::handshake() {
     send(sock, buffer, size, MSG_NOSIGNAL);
     free(buffer);
 
-    buffer = malloc(1024);
+    buffer = malloc(BUFFER_SIZE);
     CodecServer::proto::Request request;
-    size = recv(sock, buffer, 1024, 0);
+    size = recv(sock, buffer, BUFFER_SIZE, 0);
     if (size == -1) {
         std::cerr << "request failure: " << errno << "\n";
         // TODO throw an execption
