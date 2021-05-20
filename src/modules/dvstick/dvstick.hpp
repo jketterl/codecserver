@@ -5,6 +5,8 @@
 namespace CodecServer {
 
     class DvStick : public Codec {
+        public:
+            virtual Session* startSession(Request* request) override;
     };
 
 }
