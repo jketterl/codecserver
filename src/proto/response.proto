@@ -1,0 +1,13 @@
+syntax = "proto2";
+
+package CodecServer.proto;
+
+message Response {
+  enum Status {
+    OK = 0;
+    ERROR = 1;
+  }
+
+  required Status result = 1;
+  optional string message = 2;
+}

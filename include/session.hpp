@@ -4,8 +4,7 @@ namespace CodecServer {
 
     class Session {
         public:
-            virtual char* decode(char* data) = 0;
-            virtual char* encode(char* data) = 0;
+            virtual char* process(char* data) = 0;
     };
 
 }

@@ -1,7 +1,10 @@
 #include "cli.hpp"
 #include "handshake.pb.h"
+#include "request.pb.h"
+#include "response.pb.h"
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <unistd.h>
 #include <iostream>
 
 using namespace CodecServer;
@@ -31,15 +34,46 @@ int Cli::main(int argc, char** argv) {
         return 1;
     }
 
-    Handshake handshake;
+    CodecServer::proto::Handshake handshake;
     handshake.ParseFromArray(buffer, rc);
 
-    std::cout << "received handshake from " << handshake.servername() << "\n";
+    std::cerr << "received handshake from " << handshake.servername() << "\n";
 
     if (handshake.serverversion() != VERSION) {
         std::cerr << "server version mismatch\n";
         return 1;
     }
+    free(buffer);
+
+    CodecServer::proto::Request request;
+    request.set_codec("ambe");
+    request.set_direction(CodecServer::proto::Request_Direction_DECODE);
+
+    size_t size = request.ByteSizeLong();
+    buffer = malloc(size);
+    request.SerializeToArray(buffer, size);
+    send(sock, buffer, size, MSG_NOSIGNAL);
+
+    free(buffer);
+
+    buffer = malloc(1024);
+    rc = recv(sock, buffer, 1024, 0);
+    if (rc == -1) {
+        std::cerr << "response error\n";
+        return 1;
+    }
+
+    CodecServer::proto::Response response;
+    response.ParseFromArray(buffer, rc);
+
+    if (response.result() != CodecServer::proto::Response_Status_OK) {
+        std::cerr << "server replied with error, message: " << response.message() << "\n";
+        return 1;
+    }
+
+    std::cerr << "server response OK, start decoding!\n";
+
+    ::close(sock);
 
     return 0;
 }

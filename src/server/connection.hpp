@@ -1,5 +1,7 @@
 #pragma once
 
+#include "session.hpp"
+
 namespace CodecServer {
 
     class Connection {
@@ -10,6 +12,7 @@ namespace CodecServer {
             void loop();
             void close();
             bool run = true;
+            Session* session;
             int sock;
     };
 

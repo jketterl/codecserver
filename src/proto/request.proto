@@ -1,0 +1,13 @@
+syntax = "proto2";
+
+package CodecServer.proto;
+
+message Request {
+  required string codec = 1;
+  enum Direction {
+    ENCODE = 0;
+    DECODE = 1;
+  }
+  required Direction direction = 2;
+  map<string, string> args = 3;
+}

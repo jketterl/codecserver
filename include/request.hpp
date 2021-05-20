@@ -5,10 +5,12 @@
 
 namespace CodecServer {
 
+    enum Direction { ENCODE, DECODE };
+
     class Request {
         public:
-            Request(std::string codec, std::map<std::string, std::string> args);
-            std::string getCodec();
+            Request(Direction dir, std::map<std::string, std::string> args);
+            Request(Direction dir);
             std::map<std::string, std::string> getArgs();
             std::string getArg(std::string name);
     };

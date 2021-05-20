@@ -6,8 +6,7 @@ namespace CodecServer {
 
     class DvStickSession: public Session {
         public:
-            virtual char* decode(char* data);
-            virtual char* encode(char* data);
+            virtual char* process(char* data);
     };
 
 }

@@ -2,10 +2,6 @@
 
 using namespace CodecServer;
 
-char* DvStickSession::decode(char* data) {
-    return data;
-}
-
-char* DvStickSession::encode(char* data) {
+char* DvStickSession::process(char* data) {
     return data;
 }
