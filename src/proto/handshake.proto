@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-package codecserver;
+package CodecServer;
 
 message Handshake {
     required string serverName = 1;

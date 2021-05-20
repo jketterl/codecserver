@@ -3,6 +3,7 @@
 #include <thread>
 #include <iostream>
 #include <unistd.h>
+#include <netinet/in.h>
 
 using namespace CodecServer;
 
@@ -18,13 +19,14 @@ Connection::Connection(int sock) {
 
 void Connection::handshake() {
     GOOGLE_PROTOBUF_VERIFY_VERSION;
-    codecserver::Handshake handshake;
-    handshake.set_servername("this is a test.");
+    Handshake handshake;
+    handshake.set_servername("codecserver");
     handshake.set_serverversion(VERSION);
-    std::string message;
-    handshake.SerializeToString(&message);
-    std::cout << message << "\n";
-    std::cout << "SIM handshake\n";
+    size_t size = handshake.ByteSizeLong();
+    void* buffer = malloc(size);
+    handshake.SerializeToArray(buffer, size);
+    send(sock, buffer, size, MSG_NOSIGNAL);
+    free(buffer);
 }
 
 void Connection::loop() {
