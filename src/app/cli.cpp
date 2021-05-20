@@ -7,6 +7,7 @@
 #include <sys/un.h>
 #include <unistd.h>
 #include <iostream>
+#include <stdio.h>
 
 using namespace CodecServer;
 
@@ -73,6 +74,25 @@ int Cli::main(int argc, char** argv) {
     }
 
     std::cerr << "server response OK, start decoding!\n";
+
+    buffer = malloc(BUFFER_SIZE);
+
+    while (run) {
+        size = fread(buffer, sizeof(char), BUFFER_SIZE, stdin);
+        if (size <= 0) {
+            run = false;
+            break;
+        }
+        send(sock, buffer, size, MSG_NOSIGNAL);
+        size = recv(sock, buffer, BUFFER_SIZE, 0);
+        if (size <= 0) {
+            run = false;
+            break;
+        }
+        fwrite(buffer, sizeof(char), size, stdout);
+    }
+
+    free(buffer);
 
     ::close(sock);
 

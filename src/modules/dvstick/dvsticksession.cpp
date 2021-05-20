@@ -1,7 +1,9 @@
 #include "dvsticksession.hpp"
+#include <cstring>
 
 using namespace CodecServer;
 
-char* DvStickSession::process(char* data) {
-    return data;
+size_t DvStickSession::process(char* input, char* output, size_t size) {
+    std::memcpy(output, input, size);
+    return size;
 }

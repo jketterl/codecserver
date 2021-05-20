@@ -7,6 +7,7 @@ namespace CodecServer {
             int main(int argc, char** argv);
         private:
             int sock;
+            bool run = true;
     };
 
 }

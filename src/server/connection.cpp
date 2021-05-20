@@ -81,7 +81,18 @@ void Connection::handshake() {
 }
 
 void Connection::loop() {
-    std::cout << "SIM connection loop\n";
+    char* input = (char*) malloc(BUFFER_SIZE);
+    char* output = (char*) malloc(BUFFER_SIZE);
+    std::cout << "entering loop\n";
+
+    while (run) {
+        size_t size = recv(sock, input, BUFFER_SIZE, 0);
+        if (size <= 0) {
+            run = false;
+        }
+        size = session->process(input, output, size);
+        send(sock, output, size, MSG_NOSIGNAL);
+    }
 }
 
 void Connection::close() {
