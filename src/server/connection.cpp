@@ -1,4 +1,5 @@
 #include "connection.hpp"
+#include "handshake.pb.h"
 #include <thread>
 #include <iostream>
 #include <unistd.h>
@@ -16,6 +17,13 @@ Connection::Connection(int sock) {
 }
 
 void Connection::handshake() {
+    GOOGLE_PROTOBUF_VERIFY_VERSION;
+    codecserver::Handshake handshake;
+    handshake.set_servername("this is a test.");
+    handshake.set_serverversion(VERSION);
+    std::string message;
+    handshake.SerializeToString(&message);
+    std::cout << message << "\n";
     std::cout << "SIM handshake\n";
 }
 
