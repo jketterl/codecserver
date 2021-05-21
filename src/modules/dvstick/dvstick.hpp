@@ -1,12 +1,18 @@
 #pragma once
 
-#include "codec.hpp"
+#include <string>
 
-namespace CodecServer {
+#define BUFFER_SIZE 1024
 
-    class DvStick : public Codec {
+namespace DvStick {
+
+    class DvStick {
         public:
-            virtual Session* startSession(Request* request) override;
+            DvStick(std::string tty, unsigned int baudRate);
+        private:
+            void open(std::string tty, unsigned int baudRate);
+            void init();
+            int fd;
     };
 
 }
