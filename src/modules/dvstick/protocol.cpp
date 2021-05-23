@@ -1,5 +1,4 @@
 #include "protocol.hpp"
-#include <cstring>
 #include <cassert>
 #include <arpa/inet.h> // htons
 #include <iostream>
@@ -25,15 +24,27 @@ Packet* Packet::parse(char* data, size_t size) {
     if (p->verifyChecksum() != 0) {
         return nullptr;
     }
-    if (p->getType() == DV3K_TYPE_CONTROL) {
-        switch(p->payload[0]) {
+    char type = p->getType();
+    if (type == DV3K_TYPE_CONTROL) {
+        char opCode = p->payload[0];
+        if (opCode >= 0x40 && opCode <= 0x42) {
+            std::cerr << "channel detected: " << opCode - 0x40 << "\n";
+            opCode = p->payload[2];
+        }
+        switch(opCode) {
             case DV3K_CONTROL_READY:
                 return new ReadyPacket(data, size);
             case DV3K_CONTROL_PRODID:
                 return new ProdIdResponse(data, size);
             case DV3K_CONTROL_VERSTRING:
                 return new VersionStringResponse(data, size);
+            case DV3K_CONTROL_RATET:
+                return new RateTResponse(data, size);
+            default:
+                std::cerr << "unexpected opcode: " << std::hex << +opCode << "\n";
         }
+    } else if (type == DV3K_TYPE_AUDIO) {
+        return new SpeechPacket(data, size);
     }
     return p;
 }
@@ -70,12 +81,16 @@ void Packet::writeTo(int fd) {
 
 Packet* Packet::receiveFrom(int fd) {
     char* buf = (char*) malloc(1024);
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 10; i++) {
         char start_byte;
-        read(fd, buf, 1);
+        if (read(fd, buf, 1) == 0) {
+            std::cerr << "no input on serial\n";
+            continue;
+        }
         if (buf[0] == DV3K_START_BYTE) {
             break;
         }
+        std::cerr << "received unexpected byte: " << std::hex << +buf[0] << "\n";
     }
 
     if (buf[0] != DV3K_START_BYTE) {
@@ -83,7 +98,7 @@ Packet* Packet::receiveFrom(int fd) {
     }
 
     short remain = 3;
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 10; i++) {
         remain -= read(fd, buf + (4 - remain), remain);
         if (remain == 0) {
             break;
@@ -98,7 +113,7 @@ Packet* Packet::receiveFrom(int fd) {
     remain = payloadLength;
     buf = (char*) realloc(buf, remain + 4);
 
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 10; i++) {
         remain -= read(fd, buf + (4 + payloadLength - remain), remain);
         if (remain == 0) {
             break;
@@ -118,4 +133,35 @@ std::string ProdIdResponse::getProductId() {
 
 std::string VersionStringResponse::getVersionString() {
     return std::string(payload + 1, getPayloadLength() - 1);
+}
+
+unsigned char RateTResponse::getChannel() {
+    return payload[0] - 0x40;
+}
+
+char RateTResponse::getResult() {
+    return payload[3];
+}
+
+size_t SpeechPacket::getSpeechData(char* output) {
+    char* pos = payload;
+    size_t len = 0;
+    while (pos < payload + getPayloadLength()) {
+        if (pos[0] >= 0x40 && pos[0] <= 0x42) {
+            //std::cerr << "channel was " << pos[0] - 0x40 << "\n";
+            pos += 1;
+        } else if (pos[0] == 0x00) {
+            len = (unsigned char) pos[1];
+            pos += 2;
+            for (int i = 0; i < len; i++) {
+                ((short*) output)[i] = ntohs(((short*) pos)[i]);
+            }
+            //memcpy(output, pos, len * 2);
+            pos += len * 2;
+        } else {
+            std::cerr << "unexpected field data: " << std::hex << +pos[0] << "\n";
+            pos += 1;
+        }
+    }
+    return len * 2;
 }

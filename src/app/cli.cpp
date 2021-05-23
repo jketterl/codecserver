@@ -67,6 +67,7 @@ int Cli::main(int argc, char** argv) {
 
     CodecServer::proto::Response response;
     response.ParseFromArray(buffer, rc);
+    free(buffer);
 
     if (response.result() != CodecServer::proto::Response_Status_OK) {
         std::cerr << "server replied with error, message: " << response.message() << "\n";
@@ -75,23 +76,26 @@ int Cli::main(int argc, char** argv) {
 
     std::cerr << "server response OK, start decoding!\n";
 
+    void* in_buf = malloc(9);
     buffer = malloc(BUFFER_SIZE);
 
     while (run) {
-        size = fread(buffer, sizeof(char), BUFFER_SIZE, stdin);
+        size = fread(in_buf, sizeof(char), 9, stdin);
         if (size <= 0) {
             run = false;
             break;
         }
-        send(sock, buffer, size, MSG_NOSIGNAL);
-        size = recv(sock, buffer, BUFFER_SIZE, 0);
+        send(sock, in_buf, size, MSG_NOSIGNAL);
+        size = recv(sock, buffer, 320, 0);
         if (size <= 0) {
             run = false;
             break;
         }
         fwrite(buffer, sizeof(char), size, stdout);
+        fflush(stdout);
     }
 
+    free(in_buf);
     free(buffer);
 
     ::close(sock);

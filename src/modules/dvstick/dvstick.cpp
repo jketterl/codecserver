@@ -96,6 +96,48 @@ void DvStick::init() {
 
     std::cerr << "Product id: " << prodid->getProductId() << "; Version: " << versionString->getVersionString() << "\n";
 
+    (new RateTRequest(0, 33))->writeTo(fd);
+
+    response = Packet::receiveFrom(fd);
+    if (response == nullptr) {
+        std::cerr << "no response\n";
+        return;
+    }
+
+    RateTResponse* rateT = dynamic_cast<RateTResponse*>(response);
+    if (rateT == nullptr) {
+        std::cerr << "unexpected response from stick\n";
+        return;
+    }
+
+    if (rateT->getResult() != 0) {
+        std::cerr << "error setting rate: " << rateT->getResult() << "\n";
+        return;
+    }
+
+}
+
+size_t DvStick::decode(char* input, char* output, size_t size) {
+    int processed = 0;
+    int collected = 0;
+    while (processed < size / 9) {
+        (new ChannelPacket(input + processed * 9, 9))->writeTo(fd);
+        Packet* response = Packet::receiveFrom(fd);
+        if (response == nullptr) {
+            std::cerr << "no response\n";
+            return 0;
+        }
+
+        SpeechPacket* speech = dynamic_cast<SpeechPacket*>(response);
+        if (speech == nullptr) {
+            std::cerr << "response is not speech\n";
+            return 0;
+        }
+        collected += speech->getSpeechData(output + processed * 320);
+
+        processed += 1;
+    }
+    return collected;
 }
 
 }

@@ -3,6 +3,8 @@
 #include <string>
 #include <unistd.h>
 #include <stdlib.h>
+#include <cstring>
+#include <cassert>
 
 #define DV3K_START_BYTE 0x61
 #define DV3K_PARITY_BYTE 0x2f
@@ -12,11 +14,15 @@
 #define DV3K_TYPE_AUDIO 0x02
 
 #define DV3K_CONTROL_RATEP 0x0A
+#define DV3K_CONTROL_RATET 0x09
+#define DV3K_CONTROL_INIT 0x0B
 #define DV3K_CONTROL_PRODID 0x30
 #define DV3K_CONTROL_VERSTRING 0x31
 #define DV3K_CONTROL_RESET 0x33
 #define DV3K_CONTROL_READY 0x39
 #define DV3K_CONTROL_CHANFMT 0x15
+#define DV3K_CONTROL_SPCHFMT 0x16
+#define DV3K_CONTROL_COMPAND 0x32
 
 namespace DvStick::Protocol {
 
@@ -79,5 +85,47 @@ namespace DvStick::Protocol {
             VersionStringResponse(char* payload, size_t bytes): ControlPacket(payload, bytes) {}
             std::string getVersionString();
     };
+
+    // DMR rate 3600/2450: rate index 33
+    class RateTRequest: public ControlPacket{
+        public:
+            RateTRequest(unsigned char channel, unsigned char index): ControlPacket(11) {
+                assert(channel <= 3);
+                payload[0] = 0x40 + channel;
+                payload[1] = DV3K_CONTROL_RATET;
+                payload[2] = index;
+                // string in the init, too
+                payload[3] = DV3K_CONTROL_INIT;
+                payload[4] = 0x02;
+            }
+    };
+
+    class RateTResponse: public ControlPacket {
+        public:
+            RateTResponse(char* payload, size_t size): ControlPacket(payload, size) {}
+            unsigned char getChannel();
+            char getResult();
+    };
+
+    class ChannelPacket: public Packet {
+        public:
+            ChannelPacket(char* channelData, size_t size): Packet(size + 9) {
+                setType(DV3K_TYPE_AMBE);
+                // channel to be used
+                payload[0] = 0x40;
+                // CHAND
+                payload[1] = 0x01;
+                // number of bits
+                payload[2] = size * 8;
+                memcpy(payload + 3, channelData, size);
+            }
+    };
+
+    class SpeechPacket: public Packet {
+        public:
+            SpeechPacket(char* data, size_t size): Packet(data, size) {}
+            size_t getSpeechData(char* output);
+    };
+
 
 }
