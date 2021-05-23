@@ -4,15 +4,14 @@
 
 using namespace DvStick;
 
-DvStickSession::DvStickSession(Device* stick, unsigned char channel) {
-    this->stick = stick;
+DvStickSession::DvStickSession(Channel* channel) {
     this->channel = channel;
 }
 
 size_t DvStickSession::process(char* input, char* output, size_t size) {
-    return stick->decode(channel, input, output, size);
+    return channel->decode(input, output, size);
 }
 
 void DvStickSession::end() {
-    stick->releaseChannel(channel);
+    channel->release();
 }

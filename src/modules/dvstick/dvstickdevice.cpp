@@ -21,19 +21,15 @@ std::vector<std::string> Device::getCodecs() {
 }
 
 CodecServer::Session* Device::startSession(CodecServer::Request* request) {
-    for (int i = 0; i < channelState.size(); i++) {
+    for (Channel* channel: channels) {
         // TODO lock?
-        if (!channelState[i]) {
-            std::cerr << "starting new session on channel " << i << "\n";
-            channelState[i] = true;
-            return new DvStickSession(this, i);
+        if (!channel->isBusy()) {
+            std::cerr << "starting new session on channel " << +channel->getIndex() << "\n";
+            channel->reserve();
+            return new DvStickSession(channel);
         }
     }
     return nullptr;
-}
-
-void Device::releaseChannel(unsigned char channel) {
-    channelState[channel] = false;
 }
 
 void Device::open(std::string ttyname, unsigned int baudRate) {
@@ -119,7 +115,9 @@ void Device::init() {
     std::cerr << "Product id: " << prodid->getProductId() << "; Version: " << versionString->getVersionString() << "\n";
 
     // TODO check product id and initialize number of channels
-    channelState = {false, false, false};
+    for (unsigned char i = 0; i < 3; i++) {
+        channels.push_back(new Channel(this, i));
+    }
 
     (new RateTRequest(0, 33))->writeTo(fd);
 
@@ -142,12 +140,17 @@ void Device::init() {
 
 }
 
-size_t Device::decode(unsigned char channel, char* input, char* output, size_t size) {
+Channel::Channel(Device* device, unsigned char index) {
+    this->device = device;
+    this->index = index;
+}
+
+size_t Channel::decode(char* input, char* output, size_t size) {
     int processed = 0;
     int collected = 0;
     while (processed < size / 9) {
-        (new ChannelPacket(channel, input + processed * 9, 9))->writeTo(fd);
-        Packet* response = Packet::receiveFrom(fd);
+        (new ChannelPacket(index, input + processed * 9, 9))->writeTo(device->fd);
+        Packet* response = Packet::receiveFrom(device->fd);
         if (response == nullptr) {
             std::cerr << "no response\n";
             return 0;
@@ -163,6 +166,22 @@ size_t Device::decode(unsigned char channel, char* input, char* output, size_t s
         processed += 1;
     }
     return collected;
+}
+
+unsigned char Channel::getIndex() {
+    return index;
+}
+
+bool Channel::isBusy() {
+    return busy;
+}
+
+void Channel::reserve() {
+    busy = true;
+}
+
+void Channel::release() {
+    busy = false;
 }
 
 }
