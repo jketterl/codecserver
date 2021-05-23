@@ -1,12 +1,13 @@
 #pragma once
 
-#include "codec.hpp"
+#include "device.hpp"
 
 namespace DvStick {
 
-    class DvStickCodec : public CodecServer::Codec {
+    class DvStickDevice : public CodecServer::Device {
         public:
-            virtual CodecServer::Session* startSession(CodecServer::Request* request) override;
+            std::vector<std::string> getCodecs();
+            CodecServer::Session* startSession(CodecServer::Request* request) override;
     };
 
 }

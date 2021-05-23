@@ -4,8 +4,12 @@
 
 using namespace DvStick;
 
-CodecServer::Session* DvStickCodec::startSession(CodecServer::Request* request) {
+std::vector<std::string> DvStickDevice::getCodecs() {
+    return { "ambe" };
+}
+
+CodecServer::Session* DvStickDevice::startSession(CodecServer::Request* request) {
     return new DvStickSession();
 }
 
-static int registration = CodecServer::Registry::registerCodec("ambe", new DvStickCodec());
+static int registration = CodecServer::Registry::registerDevice(new DvStickDevice());

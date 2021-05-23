@@ -1,6 +1,6 @@
 #include "server.hpp"
 #include "scanner.hpp"
-#include "connection.hpp"
+#include "clientconnection.hpp"
 #include <iostream>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -58,7 +58,7 @@ void Server::serve() {
         std::cout << "starting accept...\n";
         int client_sock = accept(sock, NULL, NULL);
         if (client_sock > 0) {
-            new Connection(client_sock);
+            new ClientConnection(client_sock);
         }
     }
 

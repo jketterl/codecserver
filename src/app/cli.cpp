@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <stdio.h>
+#include <google/protobuf/any.pb.h>
 
 using namespace CodecServer;
 
@@ -18,7 +19,7 @@ int Cli::main(int argc, char** argv) {
     const char* socket_path = "/tmp/codecserver.sock";
     strncpy(addr.sun_path, socket_path, strlen(socket_path));
 
-    sock = socket(AF_UNIX, SOCK_STREAM, 0);
+    int sock = socket(AF_UNIX, SOCK_STREAM, 0);
     if (sock == -1) {
         std::cerr << "socket error\n";
         return 1;
@@ -29,15 +30,15 @@ int Cli::main(int argc, char** argv) {
         return 1;
     }
 
-    void* buffer = malloc(BUFFER_SIZE);
-    int rc = recv(sock, buffer, BUFFER_SIZE, 0);
-    if (rc == -1) {
-        std::cerr << "handshake receive failure\n";
+    Connection* connection = new Connection(sock);
+    google::protobuf::Any* message = connection->receiveMessage();
+    if (!message->Is<CodecServer::proto::Handshake>()) {
+        std::cerr << "unexpected message\n";
         return 1;
     }
 
     CodecServer::proto::Handshake handshake;
-    handshake.ParseFromArray(buffer, rc);
+    message->UnpackTo(&handshake);
 
     std::cerr << "received handshake from " << handshake.servername() << "\n";
 
@@ -45,29 +46,20 @@ int Cli::main(int argc, char** argv) {
         std::cerr << "server version mismatch\n";
         return 1;
     }
-    free(buffer);
 
     CodecServer::proto::Request request;
     request.set_codec("ambe");
     request.set_direction(CodecServer::proto::Request_Direction_DECODE);
+    connection->sendMessage(&request);
 
-    size_t size = request.ByteSizeLong();
-    buffer = malloc(size);
-    request.SerializeToArray(buffer, size);
-    send(sock, buffer, size, MSG_NOSIGNAL);
-
-    free(buffer);
-
-    buffer = malloc(BUFFER_SIZE);
-    rc = recv(sock, buffer, BUFFER_SIZE, 0);
-    if (rc == -1) {
+    message = connection->receiveMessage();
+    if (!message->Is<CodecServer::proto::Response>()) {
         std::cerr << "response error\n";
         return 1;
     }
 
     CodecServer::proto::Response response;
-    response.ParseFromArray(buffer, rc);
-    free(buffer);
+    message->UnpackTo(&response);
 
     if (response.result() != CodecServer::proto::Response_Status_OK) {
         std::cerr << "server replied with error, message: " << response.message() << "\n";
@@ -77,10 +69,10 @@ int Cli::main(int argc, char** argv) {
     std::cerr << "server response OK, start decoding!\n";
 
     void* in_buf = malloc(9);
-    buffer = malloc(BUFFER_SIZE);
+    void* buffer = malloc(BUFFER_SIZE);
 
     while (run) {
-        size = fread(in_buf, sizeof(char), 9, stdin);
+        size_t size = fread(in_buf, sizeof(char), 9, stdin);
         if (size <= 0) {
             run = false;
             break;

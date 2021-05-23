@@ -3,20 +3,24 @@
 
 using namespace CodecServer;
 
-int Registry::registerCodec(std::string identifier, Codec* codec) {
-    return Registry::get()->_registerCodec(identifier, codec);
+int Registry::registerDevice(Device* device) {
+    return Registry::get()->_registerDevice(device);
 }
 
-int Registry::_registerCodec(std::string identifier, Codec* codec) {
-    std::cout << "codec registered: " << identifier << "\n";
+int Registry::_registerDevice(Device* device) {
+    std::cout << "registering new device for codecs: ";
 
-    codecs[identifier].push_back(codec);
+    for (std::string codec: device->getCodecs()) {
+        std::cout << codec << ", ";
+        devices[codec].push_back(device);
+    }
+    std::cout << "\n";
 
     return 0;
 }
 
-std::vector<Codec*> Registry::findCodecs(std::string identifier) {
-    return codecs[identifier];
+std::vector<Device*> Registry::findDevices(std::string identifier) {
+    return devices[identifier];
 }
 
 Registry* Registry::get() {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "codec.hpp"
+#include "device.hpp"
 #include <string>
 #include <vector>
 
@@ -9,11 +9,11 @@ namespace CodecServer {
     class Registry {
         public:
             static Registry* get();
-            static int registerCodec(std::string identifier, Codec* codec);
-            std::vector<Codec*> findCodecs(std::string identifier);
+            static int registerDevice(Device* device);
+            std::vector<Device*> findDevices(std::string identifier);
         private:
-            std::map<std::string, std::vector<Codec*>> codecs;
-            int _registerCodec(std::string identifier, Codec* codec);
+            std::map<std::string, std::vector<Device*>> devices;
+            int _registerDevice(Device* device);
     };
 
     static Registry* sharedRegistry = nullptr;
