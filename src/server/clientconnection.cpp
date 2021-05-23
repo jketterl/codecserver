@@ -57,7 +57,7 @@ void ClientConnection::handshake() {
 void ClientConnection::loop() {
     char* input = (char*) malloc(BUFFER_SIZE);
     char* output = (char*) malloc(BUFFER_SIZE);
-    std::cout << "entering loop\n";
+    session->start();
 
     while (run) {
         size_t size = recv(sock, input, BUFFER_SIZE, 0);
@@ -67,6 +67,8 @@ void ClientConnection::loop() {
         size = session->process(input, output, size);
         send(sock, output, size, MSG_NOSIGNAL);
     }
+
+    session->end();
 }
 
 void ClientConnection::close() {

@@ -8,10 +8,12 @@ namespace DvStick {
 
     class DvStickSession: public CodecServer::Session {
         public:
-            DvStickSession(Device* stick);
-            virtual size_t process(char* input, char* output, size_t size);
+            DvStickSession(Device* stick, unsigned char channel);
+            size_t process(char* input, char* output, size_t size) override;
+            void end() override;
         private:
             Device* stick;
+            unsigned char channel;
     };
 
 }

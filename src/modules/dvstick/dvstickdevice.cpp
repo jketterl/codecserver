@@ -21,7 +21,19 @@ std::vector<std::string> Device::getCodecs() {
 }
 
 CodecServer::Session* Device::startSession(CodecServer::Request* request) {
-    return new DvStickSession(this);
+    for (int i = 0; i < channelState.size(); i++) {
+        // TODO lock?
+        if (!channelState[i]) {
+            std::cerr << "starting new session on channel " << i << "\n";
+            channelState[i] = true;
+            return new DvStickSession(this, i);
+        }
+    }
+    return nullptr;
+}
+
+void Device::releaseChannel(unsigned char channel) {
+    channelState[channel] = false;
 }
 
 void Device::open(std::string ttyname, unsigned int baudRate) {
@@ -105,6 +117,9 @@ void Device::init() {
     }
 
     std::cerr << "Product id: " << prodid->getProductId() << "; Version: " << versionString->getVersionString() << "\n";
+
+    // TODO check product id and initialize number of channels
+    channelState = {false, false, false};
 
     (new RateTRequest(0, 33))->writeTo(fd);
 
