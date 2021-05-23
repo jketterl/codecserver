@@ -1,4 +1,6 @@
-#include "dvstick.hpp"
+#include "device.hpp"
+#include "registry.hpp"
+#include "dvsticksession.hpp"
 #include "protocol.hpp"
 #include <iostream>
 #include <cstring>
@@ -9,12 +11,20 @@ namespace DvStick {
 
 using namespace Protocol;
 
-DvStick::DvStick(std::string tty, unsigned int baudRate) {
+Device::Device(std::string tty, unsigned int baudRate) {
     open(tty, baudRate);
     init();
 }
 
-void DvStick::open(std::string ttyname, unsigned int baudRate) {
+std::vector<std::string> Device::getCodecs() {
+    return { "ambe" };
+}
+
+CodecServer::Session* Device::startSession(CodecServer::Request* request) {
+    return new DvStickSession(this);
+}
+
+void Device::open(std::string ttyname, unsigned int baudRate) {
     fd = ::open(ttyname.c_str(), O_RDWR | O_NOCTTY | O_SYNC);
     if (fd < 0) {
         std::cerr << "could not open TTY: " << strerror(errno) << "\n";
@@ -51,7 +61,7 @@ void DvStick::open(std::string ttyname, unsigned int baudRate) {
     }
 }
 
-void DvStick::init() {
+void Device::init() {
     (new ResetPacket())->writeTo(fd);
 
     Packet* response = Packet::receiveFrom(fd);
@@ -117,7 +127,7 @@ void DvStick::init() {
 
 }
 
-size_t DvStick::decode(char* input, char* output, size_t size) {
+size_t Device::decode(char* input, char* output, size_t size) {
     int processed = 0;
     int collected = 0;
     while (processed < size / 9) {

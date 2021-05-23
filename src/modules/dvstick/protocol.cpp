@@ -28,7 +28,7 @@ Packet* Packet::parse(char* data, size_t size) {
     if (type == DV3K_TYPE_CONTROL) {
         char opCode = p->payload[0];
         if (opCode >= 0x40 && opCode <= 0x42) {
-            std::cerr << "channel detected: " << opCode - 0x40 << "\n";
+            // response is for a specific channel... move forward
             opCode = p->payload[2];
         }
         switch(opCode) {

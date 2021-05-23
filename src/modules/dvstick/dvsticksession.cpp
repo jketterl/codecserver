@@ -4,8 +4,8 @@
 
 using namespace DvStick;
 
-DvStickSession::DvStickSession() {
-    stick = new DvStick("/dev/ttyUSB0", 921600);
+DvStickSession::DvStickSession(Device* stick) {
+    this->stick = stick;
 }
 
 size_t DvStickSession::process(char* input, char* output, size_t size) {
