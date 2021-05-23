@@ -1,4 +1,4 @@
-syntax = "proto2";
+syntax = "proto3";
 
 package CodecServer.proto;
 
@@ -8,6 +8,6 @@ message Response {
     ERROR = 1;
   }
 
-  required Status result = 1;
+  Status result = 1;
   optional string message = 2;
 }

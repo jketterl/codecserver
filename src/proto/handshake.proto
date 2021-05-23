@@ -1,8 +1,8 @@
-syntax = "proto2";
+syntax = "proto3";
 
 package CodecServer.proto;
 
 message Handshake {
-  required string serverName = 1;
-  required string serverVersion = 2;
+  string serverName = 1;
+  string serverVersion = 2;
 }
