@@ -9,7 +9,7 @@ namespace DvStick {
             Device(std::string tty, unsigned int baudRate);
             std::vector<std::string> getCodecs() override;
             CodecServer::Session* startSession(CodecServer::Request* request) override;
-            size_t decode(char* input, char* output, size_t size);
+            size_t decode(unsigned char channel, char* input, char* output, size_t size);
             void releaseChannel(unsigned char channel);
         private:
             void open(std::string tty, unsigned int baudRate);

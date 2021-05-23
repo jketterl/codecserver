@@ -109,10 +109,10 @@ namespace DvStick::Protocol {
 
     class ChannelPacket: public Packet {
         public:
-            ChannelPacket(char* channelData, size_t size): Packet(size + 9) {
+            ChannelPacket(unsigned char channel, char* channelData, size_t size): Packet(size + 9) {
                 setType(DV3K_TYPE_AMBE);
                 // channel to be used
-                payload[0] = 0x40;
+                payload[0] = 0x40 + channel;
                 // CHAND
                 payload[1] = 0x01;
                 // number of bits

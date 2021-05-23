@@ -10,7 +10,7 @@ DvStickSession::DvStickSession(Device* stick, unsigned char channel) {
 }
 
 size_t DvStickSession::process(char* input, char* output, size_t size) {
-    return stick->decode(input, output, size);
+    return stick->decode(channel, input, output, size);
 }
 
 void DvStickSession::end() {

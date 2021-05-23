@@ -142,11 +142,11 @@ void Device::init() {
 
 }
 
-size_t Device::decode(char* input, char* output, size_t size) {
+size_t Device::decode(unsigned char channel, char* input, char* output, size_t size) {
     int processed = 0;
     int collected = 0;
     while (processed < size / 9) {
-        (new ChannelPacket(input + processed * 9, 9))->writeTo(fd);
+        (new ChannelPacket(channel, input + processed * 9, 9))->writeTo(fd);
         Packet* response = Packet::receiveFrom(fd);
         if (response == nullptr) {
             std::cerr << "no response\n";
