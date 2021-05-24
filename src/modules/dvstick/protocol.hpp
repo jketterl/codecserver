@@ -27,6 +27,8 @@
 #define DV3K_DIRECTION_ENCODE 0x01
 #define DV3K_DIRECTION_DECODE 0x02
 
+#define DV3K_FIFO_MAX_PENDING 3
+
 namespace DvStick::Protocol {
 
     class Packet {

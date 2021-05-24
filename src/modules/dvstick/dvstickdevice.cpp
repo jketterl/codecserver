@@ -138,11 +138,16 @@ void Device::writePacket(Packet* packet) {
 
 void Device::receivePacket(Packet* packet) {
     SpeechPacket* speech = dynamic_cast<SpeechPacket*>(packet);
-    if (speech == nullptr) {
-        std::cerr << "response is not speech\n";
+    if (speech != nullptr) {
+        channels[speech->getChannel()]->receive(speech);
         return;
     }
-    channels[speech->getChannel()]->receive(speech);
+    RateTResponse* response = dynamic_cast<RateTResponse*>(packet);
+    if (response != nullptr) {
+        std::cerr << "setup response received\n";
+        return;
+    }
+    std::cerr << "response is not speech\n";
 }
 
 Channel::Channel(Device* device, unsigned char index) {
@@ -205,10 +210,11 @@ QueueWorker::QueueWorker(Device* device, BlockingQueue<Packet*>* queue) {
 void QueueWorker::run() {
     size_t in_progress = 0;
     while (dorun) {
-        while ((!queue->empty() && in_progress < 2) || in_progress == 0) {
+        while ((!queue->empty() && in_progress < DV3K_FIFO_MAX_PENDING) || in_progress == 0) {
             Packet* packet = queue->pop();
             packet->writeTo(device->fd);
             in_progress += 1;
+            std::cerr << "  sent one packet, in_progress is now: " << in_progress << "\n";
         }
 
         do {
@@ -220,6 +226,7 @@ void QueueWorker::run() {
             }
             device->receivePacket(response);
             in_progress -= 1;
+            std::cerr << "  received one packet, in_progress is now: " << in_progress << "\n";
         } while (in_progress > 0 && queue->empty());
     }
 }
