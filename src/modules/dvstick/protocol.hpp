@@ -125,6 +125,7 @@ namespace DvStick::Protocol {
         public:
             SpeechPacket(char* data, size_t size): Packet(data, size) {}
             size_t getSpeechData(char* output);
+            unsigned char getChannel();
     };
 
 

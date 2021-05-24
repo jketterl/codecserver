@@ -81,23 +81,7 @@ void Packet::writeTo(int fd) {
 
 Packet* Packet::receiveFrom(int fd) {
     char* buf = (char*) malloc(1024);
-    for (int i = 0; i < 10; i++) {
-        char start_byte;
-        if (read(fd, buf, 1) == 0) {
-            std::cerr << "no input on serial\n";
-            continue;
-        }
-        if (buf[0] == DV3K_START_BYTE) {
-            break;
-        }
-        std::cerr << "received unexpected byte: " << std::hex << +buf[0] << "\n";
-    }
-
-    if (buf[0] != DV3K_START_BYTE) {
-        return nullptr;
-    }
-
-    short remain = 3;
+    short remain = 4;
     for (int i = 0; i < 10; i++) {
         remain -= read(fd, buf + (4 - remain), remain);
         if (remain == 0) {
@@ -105,7 +89,7 @@ Packet* Packet::receiveFrom(int fd) {
         }
     }
 
-    if (remain > 0) {
+    if (remain > 0 || buf[0] != DV3K_START_BYTE) {
         return nullptr;
     }
 
@@ -144,13 +128,11 @@ char RateTResponse::getResult() {
 }
 
 size_t SpeechPacket::getSpeechData(char* output) {
-    char* pos = payload;
+    // skip channel packets
+    char* pos = payload + 1;
     size_t len = 0;
     while (pos < payload + getPayloadLength()) {
-        if (pos[0] >= 0x40 && pos[0] <= 0x42) {
-            //std::cerr << "channel was " << pos[0] - 0x40 << "\n";
-            pos += 1;
-        } else if (pos[0] == 0x00) {
+        if (pos[0] == 0x00) {
             len = (unsigned char) pos[1];
             pos += 2;
             for (int i = 0; i < len; i++) {
@@ -164,4 +146,8 @@ size_t SpeechPacket::getSpeechData(char* output) {
         }
     }
     return len * 2;
+}
+
+unsigned char SpeechPacket::getChannel() {
+    return payload[0] - 0x40;
 }

@@ -1,17 +1,19 @@
 #include "device.hpp"
 #include "registry.hpp"
 #include "dvsticksession.hpp"
-#include "protocol.hpp"
 #include <iostream>
 #include <cstring>
 #include <fcntl.h>
 #include <termios.h>
+#include <thread>
 
 namespace DvStick {
 
 using namespace Protocol;
 
 Device::Device(std::string tty, unsigned int baudRate) {
+    queue = new BlockingQueue<DvStick::Protocol::Packet*>(10);
+    worker = new QueueWorker(this, queue);
     open(tty, baudRate);
     init();
 }
@@ -33,7 +35,7 @@ CodecServer::Session* Device::startSession(CodecServer::Request* request) {
 }
 
 void Device::open(std::string ttyname, unsigned int baudRate) {
-    fd = ::open(ttyname.c_str(), O_RDWR | O_NOCTTY | O_SYNC);
+    fd = ::open(ttyname.c_str(), O_RDWR | O_NOCTTY /*| O_SYNC*/);
     if (fd < 0) {
         std::cerr << "could not open TTY: " << strerror(errno) << "\n";
         return;
@@ -140,32 +142,43 @@ void Device::init() {
 
 }
 
+void Device::writePacket(Packet* packet) {
+    queue->push(packet);
+}
+
+void Device::receivePacket(Packet* packet) {
+    SpeechPacket* speech = dynamic_cast<SpeechPacket*>(packet);
+    if (speech == nullptr) {
+        std::cerr << "response is not speech\n";
+        return;
+    }
+    channels[speech->getChannel()]->receive(speech);
+}
+
 Channel::Channel(Device* device, unsigned char index) {
     this->device = device;
     this->index = index;
 }
 
-size_t Channel::decode(char* input, char* output, size_t size) {
+void Channel::process(char* input, size_t size) {
     int processed = 0;
     int collected = 0;
     while (processed < size / 9) {
-        (new ChannelPacket(index, input + processed * 9, 9))->writeTo(device->fd);
-        Packet* response = Packet::receiveFrom(device->fd);
-        if (response == nullptr) {
-            std::cerr << "no response\n";
-            return 0;
-        }
-
-        SpeechPacket* speech = dynamic_cast<SpeechPacket*>(response);
-        if (speech == nullptr) {
-            std::cerr << "response is not speech\n";
-            return 0;
-        }
-        collected += speech->getSpeechData(output + processed * 320);
-
+        device->writePacket(new ChannelPacket(index, input + processed * 9, 9));
         processed += 1;
     }
-    return collected;
+}
+
+void Channel::receive(SpeechPacket* packet) {
+    queue->push(packet);
+}
+
+size_t Channel::read(char* output) {
+    SpeechPacket* packet = queue->pop();
+    if (packet == nullptr) {
+        return 0;
+    }
+    return packet->getSpeechData(output);
 }
 
 unsigned char Channel::getIndex() {
@@ -177,11 +190,44 @@ bool Channel::isBusy() {
 }
 
 void Channel::reserve() {
+    queue = new BlockingQueue<SpeechPacket*>(10);
     busy = true;
 }
 
 void Channel::release() {
+    queue->shutdown();
     busy = false;
+}
+
+QueueWorker::QueueWorker(Device* device, BlockingQueue<Packet*>* queue) {
+    this->device = device;
+    this->queue = queue;
+    std::thread thread = std::thread( [this] {
+        run();
+    });
+    thread.detach();
+}
+
+void QueueWorker::run() {
+    size_t in_progress = 0;
+    while (dorun) {
+        while ((!queue->empty() && in_progress < 2) || in_progress == 0) {
+            Packet* packet = queue->pop();
+            packet->writeTo(device->fd);
+            in_progress += 1;
+        }
+
+        do {
+            Packet* response = Packet::receiveFrom(device->fd);
+            if (response == nullptr) {
+                std::cerr << "no response\n";
+                dorun = false;
+                return;
+            }
+            device->receivePacket(response);
+            in_progress -= 1;
+        } while (in_progress > 0 && queue->empty());
+    }
 }
 
 }

@@ -9,7 +9,8 @@ namespace DvStick {
     class DvStickSession: public CodecServer::Session {
         public:
             DvStickSession(Channel* channel);
-            size_t process(char* input, char* output, size_t size) override;
+            void process(char* input, size_t size) override;
+            size_t read(char* output) override;
             void end() override;
         private:
             Channel* channel;

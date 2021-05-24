@@ -56,19 +56,32 @@ void ClientConnection::handshake() {
 
 void ClientConnection::loop() {
     char* input = (char*) malloc(BUFFER_SIZE);
-    char* output = (char*) malloc(BUFFER_SIZE);
     session->start();
+
+    std::thread reader = std::thread( [this] {
+        read();
+    });
 
     while (run) {
         size_t size = recv(sock, input, BUFFER_SIZE, 0);
         if (size <= 0) {
             run = false;
         }
-        size = session->process(input, output, size);
-        send(sock, output, size, MSG_NOSIGNAL);
+        session->process(input, size);
     }
 
+
     session->end();
+    reader.join();
+}
+
+void ClientConnection::read() {
+    size_t size;
+    char* output = (char*) malloc(BUFFER_SIZE);
+    while (run) {
+        size = session->read(output);
+        send(sock, output, size, MSG_NOSIGNAL);
+    }
 }
 
 void ClientConnection::close() {

@@ -5,6 +5,7 @@
 #include "response.pb.h"
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <sys/select.h>
 #include <unistd.h>
 #include <iostream>
 #include <stdio.h>
@@ -70,21 +71,44 @@ int Cli::main(int argc, char** argv) {
 
     void* in_buf = malloc(9);
     void* buffer = malloc(BUFFER_SIZE);
+    fd_set read_fds;
+    struct timeval tv;
+    tv.tv_sec = 10;
+    tv.tv_usec = 0;
+    int rc;
+    int nfds = std::max(fileno(stdin), sock) + 1;
 
     while (run) {
-        size_t size = fread(in_buf, sizeof(char), 9, stdin);
-        if (size <= 0) {
+        FD_ZERO(&read_fds);
+        FD_SET(fileno(stdin), &read_fds);
+        FD_SET(sock, &read_fds);
+
+        rc = select(nfds, &read_fds, NULL, NULL, &tv);
+        if (rc == -1) {
+            std::cerr << "select() error\n";
             run = false;
-            break;
+        } else if (rc) {
+            if (FD_ISSET(fileno(stdin), &read_fds)) {
+                size_t size = fread(in_buf, sizeof(char), 9, stdin);
+                if (size <= 0) {
+                    run = false;
+                    break;
+                }
+                send(sock, in_buf, size, MSG_NOSIGNAL);
+            }
+            if (FD_ISSET(sock, &read_fds)) {
+                size_t size = recv(sock, buffer, 320, 0);
+                if (size <= 0) {
+                    run = false;
+                    break;
+                }
+                fwrite(buffer, sizeof(char), size, stdout);
+                fflush(stdout);
+            }
+        } else {
+            // no data, just timeout.
         }
-        send(sock, in_buf, size, MSG_NOSIGNAL);
-        size = recv(sock, buffer, 320, 0);
-        if (size <= 0) {
-            run = false;
-            break;
-        }
-        fwrite(buffer, sizeof(char), size, stdout);
-        fflush(stdout);
+
     }
 
     free(in_buf);
