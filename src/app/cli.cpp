@@ -3,6 +3,7 @@
 #include "handshake.pb.h"
 #include "request.pb.h"
 #include "response.pb.h"
+#include "framing.pb.h"
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/select.h>
@@ -69,10 +70,16 @@ int Cli::main(int argc, char** argv) {
         return 1;
     }
 
+    if (!response.has_framing()) {
+        std::cerr << "framing info is not available\n";
+        return 1;
+    }
+    CodecServer::proto::FramingHint framing = response.framing();
+
     std::cerr << "server response OK, start decoding!\n";
 
-    void* in_buf = malloc(9);
-    void* buffer = malloc(BUFFER_SIZE);
+    void* in_buf = malloc(framing.channelbytes());
+    void* out_buf = malloc(framing.audiobytes());
     fd_set read_fds;
     struct timeval tv;
     tv.tv_sec = 10;
@@ -91,7 +98,7 @@ int Cli::main(int argc, char** argv) {
             run = false;
         } else if (rc) {
             if (FD_ISSET(fileno(stdin), &read_fds)) {
-                size_t size = fread(in_buf, sizeof(char), 9, stdin);
+                size_t size = fread(in_buf, sizeof(char), framing.channelbytes(), stdin);
                 if (size <= 0) {
                     run = false;
                     break;
@@ -99,12 +106,12 @@ int Cli::main(int argc, char** argv) {
                 send(sock, in_buf, size, MSG_NOSIGNAL);
             }
             if (FD_ISSET(sock, &read_fds)) {
-                size_t size = recv(sock, buffer, 320, 0);
+                size_t size = recv(sock, out_buf, framing.audiobytes(), 0);
                 if (size <= 0) {
                     run = false;
                     break;
                 }
-                fwrite(buffer, sizeof(char), size, stdout);
+                fwrite(out_buf, sizeof(char), size, stdout);
                 fflush(stdout);
             }
         } else {
@@ -114,7 +121,7 @@ int Cli::main(int argc, char** argv) {
     }
 
     free(in_buf);
-    free(buffer);
+    free(out_buf);
 
     ::close(sock);
 

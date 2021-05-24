@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package CodecServer.proto;
 
+import "framing.proto";
+
 message Response {
   enum Status {
     OK = 0;
@@ -10,4 +12,5 @@ message Response {
 
   Status result = 1;
   optional string message = 2;
+  optional FramingHint framing = 3;
 }

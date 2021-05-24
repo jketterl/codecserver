@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package CodecServer.proto;
+
+message FramingHint {
+  uint32 channelBits = 1;
+  uint32 channelBytes = 2;
+  uint32 audioSamples = 3;
+  uint32 audioBytes = 4;
+}

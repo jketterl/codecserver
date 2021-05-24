@@ -2,6 +2,7 @@
 
 #include "session.hpp"
 #include "dvstickdevice.hpp"
+#include "framing.pb.h"
 #include <unistd.h>
 
 namespace DvStick {
@@ -12,6 +13,7 @@ namespace DvStick {
             void process(char* input, size_t size) override;
             size_t read(char* output) override;
             void end() override;
+            CodecServer::proto::FramingHint* getFraming() override;
         private:
             Channel* channel;
     };

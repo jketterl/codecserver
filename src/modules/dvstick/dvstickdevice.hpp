@@ -38,10 +38,12 @@ namespace DvStick {
             void reserve();
             void release();
             void setup(unsigned char codecIndex, unsigned char direction);
+            unsigned char getCodecIndex();
         private:
             bool busy = false;
             Device* device;
             unsigned char index;
+            unsigned char codecIndex;
             BlockingQueue<DvStick::Protocol::SpeechPacket*>* queue;
     };
 

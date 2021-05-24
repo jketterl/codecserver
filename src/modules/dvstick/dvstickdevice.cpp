@@ -157,7 +157,6 @@ Channel::Channel(Device* device, unsigned char index) {
 
 void Channel::process(char* input, size_t size) {
     int processed = 0;
-    int collected = 0;
     while (processed < size / 9) {
         device->writePacket(new ChannelPacket(index, input + processed * 9, 9));
         processed += 1;
@@ -195,7 +194,12 @@ void Channel::release() {
 }
 
 void Channel::setup(unsigned char codecIndex, unsigned char direction) {
+    this->codecIndex = codecIndex;
     device->writePacket(new SetupRequest(index, codecIndex, direction));
+}
+
+unsigned char Channel::getCodecIndex() {
+    return codecIndex;
 }
 
 QueueWorker::QueueWorker(Device* device, BlockingQueue<Packet*>* queue) {
@@ -214,7 +218,7 @@ void QueueWorker::run() {
             Packet* packet = queue->pop();
             packet->writeTo(device->fd);
             in_progress += 1;
-            std::cerr << "  sent one packet, in_progress is now: " << in_progress << "\n";
+            //std::cerr << "  sent one packet, in_progress is now: " << in_progress << "\n";
         }
 
         do {
@@ -226,7 +230,7 @@ void QueueWorker::run() {
             }
             device->receivePacket(response);
             in_progress -= 1;
-            std::cerr << "  received one packet, in_progress is now: " << in_progress << "\n";
+            //std::cerr << "  received one packet, in_progress is now: " << in_progress << "\n";
         } while (in_progress > 0 && queue->empty());
     }
 }

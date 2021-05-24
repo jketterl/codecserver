@@ -46,13 +46,18 @@ void ClientConnection::handshake() {
     }
 
     CodecServer::proto::Response response;
-    if (session != nullptr) {
-        response.set_result(CodecServer::proto::Response_Status_OK);
-    } else {
+    if (session == nullptr) {
         response.set_result(CodecServer::proto::Response_Status_ERROR);
         response.set_message("no device available");
+        sendMessage(&response);
+        return;
     }
 
+    response.set_result(CodecServer::proto::Response_Status_OK);
+    CodecServer::proto::FramingHint* framing = session->getFraming();
+    if (framing != nullptr) {
+        response.set_allocated_framing(framing);
+    }
     sendMessage(&response);
 }
 
