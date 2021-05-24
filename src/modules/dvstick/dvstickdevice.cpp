@@ -28,7 +28,16 @@ CodecServer::Session* Device::startSession(CodecServer::Request* request) {
         if (!channel->isBusy()) {
             std::cerr << "starting new session on channel " << +channel->getIndex() << "\n";
             channel->reserve();
-            return new DvStickSession(channel);
+            try {
+                std::string indexStr = request->getArg("index");
+                std::cerr << "requested index: " << indexStr << "\n";
+                unsigned char index = std::stoi(indexStr);
+                channel->setup(index, request->getDirection());
+                return new DvStickSession(channel);
+            } catch (std::invalid_argument) {
+                std::cerr << "invalid or unsupported channel index\n";
+                return nullptr;
+            }
         }
     }
     return nullptr;
@@ -121,25 +130,6 @@ void Device::init() {
         channels.push_back(new Channel(this, i));
     }
 
-    (new RateTRequest(0, 33))->writeTo(fd);
-
-    response = Packet::receiveFrom(fd);
-    if (response == nullptr) {
-        std::cerr << "no response\n";
-        return;
-    }
-
-    RateTResponse* rateT = dynamic_cast<RateTResponse*>(response);
-    if (rateT == nullptr) {
-        std::cerr << "unexpected response from stick\n";
-        return;
-    }
-
-    if (rateT->getResult() != 0) {
-        std::cerr << "error setting rate: " << rateT->getResult() << "\n";
-        return;
-    }
-
 }
 
 void Device::writePacket(Packet* packet) {
@@ -197,6 +187,10 @@ void Channel::reserve() {
 void Channel::release() {
     queue->shutdown();
     busy = false;
+}
+
+void Channel::setup(unsigned char codecIndex, unsigned char direction) {
+    device->writePacket(new SetupRequest(index, codecIndex, direction));
 }
 
 QueueWorker::QueueWorker(Device* device, BlockingQueue<Packet*>* queue) {

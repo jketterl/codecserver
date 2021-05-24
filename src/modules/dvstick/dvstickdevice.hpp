@@ -37,6 +37,7 @@ namespace DvStick {
             bool isBusy();
             void reserve();
             void release();
+            void setup(unsigned char codecIndex, unsigned char direction);
         private:
             bool busy = false;
             Device* device;

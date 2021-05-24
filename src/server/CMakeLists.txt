@@ -1,4 +1,4 @@
-add_executable(codecserver-bin codecserver.cpp server.cpp scanner.cpp registry.cpp clientconnection.cpp request.cpp)
+add_executable(codecserver-bin codecserver.cpp server.cpp scanner.cpp registry.cpp clientconnection.cpp)
 set_target_properties(codecserver-bin PROPERTIES OUTPUT_NAME codecserver)
 target_compile_definitions(codecserver-bin PUBLIC MODULES_PATH="${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/codecserver")
 target_link_libraries(codecserver-bin codecserver dl ${CMAKE_THREAD_LIBS_INIT})

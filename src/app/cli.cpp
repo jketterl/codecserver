@@ -50,7 +50,9 @@ int Cli::main(int argc, char** argv) {
 
     CodecServer::proto::Request request;
     request.set_codec("ambe");
-    request.set_direction(CodecServer::proto::Request_Direction_DECODE);
+    request.clear_direction();
+    request.mutable_direction()->Add(CodecServer::proto::Request_Direction_DECODE);
+    (*request.mutable_args())["index"] = "33";
     connection->sendMessage(&request);
 
     message = connection->receiveMessage();

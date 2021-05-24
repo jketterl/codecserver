@@ -25,17 +25,19 @@ void ClientConnection::handshake() {
     }
     CodecServer::proto::Request request;
     message->UnpackTo(&request);
-    std::cout << "client requests codec " << request.codec() << " and direction " << request.direction() << "\n";
+    std::cout << "client requests codec " << request.codec() << " and direction(s): ";
     std::map<std::string, std::string> args(request.args().begin(), request.args().end());
-    Direction dir;
-    switch (request.direction()) {
-        case CodecServer::proto::Request_Direction_ENCODE:
-            dir = ENCODE;
-            break;
-        case CodecServer::proto::Request_Direction_DECODE:
-            dir = DECODE;
-            break;
+    unsigned char dir = 0;
+    for (int direction: request.direction()) {
+        if (direction == CodecServer::proto::Request_Direction_ENCODE) {
+            dir |= DIRECTION_ENCODE;
+            std::cout << "enccode ";
+        } else if (direction == CodecServer::proto::Request_Direction_DECODE) {
+            dir |= DIRECTION_DECODE;
+            std::cout << "decode ";
+        }
     }
+    std::cout << "\n";
     Request* codecRequest = new Request(dir, args);
 
     for (Device* device: Registry::get()->findDevices(request.codec())) {

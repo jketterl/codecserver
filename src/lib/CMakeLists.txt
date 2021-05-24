@@ -1,4 +1,4 @@
-add_library(codecserver SHARED connection.cpp)
+add_library(codecserver SHARED connection.cpp request.cpp)
 target_link_libraries(codecserver codecserver_proto ${Protobuf_LIBRARIES})
 target_include_directories(codecserver PUBLIC ${codecserver_proto_includes})
 install(TARGETS codecserver

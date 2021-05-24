@@ -24,6 +24,9 @@
 #define DV3K_CONTROL_SPCHFMT 0x16
 #define DV3K_CONTROL_COMPAND 0x32
 
+#define DV3K_DIRECTION_ENCODE 0x01
+#define DV3K_DIRECTION_DECODE 0x02
+
 namespace DvStick::Protocol {
 
     class Packet {
@@ -87,16 +90,16 @@ namespace DvStick::Protocol {
     };
 
     // DMR rate 3600/2450: rate index 33
-    class RateTRequest: public ControlPacket{
+    class SetupRequest: public ControlPacket{
         public:
-            RateTRequest(unsigned char channel, unsigned char index): ControlPacket(11) {
+            SetupRequest(unsigned char channel, unsigned char index, unsigned char direction): ControlPacket(11) {
                 assert(channel <= 3);
                 payload[0] = 0x40 + channel;
                 payload[1] = DV3K_CONTROL_RATET;
                 payload[2] = index;
                 // string in the init, too
                 payload[3] = DV3K_CONTROL_INIT;
-                payload[4] = 0x02;
+                payload[4] = direction;
             }
     };
 

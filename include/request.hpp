@@ -3,16 +3,21 @@
 #include <string>
 #include <map>
 
-namespace CodecServer {
+#define DIRECTION_DECODE 1
+#define DIRECTION_ENCODE 2
 
-    enum Direction { ENCODE, DECODE };
+namespace CodecServer {
 
     class Request {
         public:
-            Request(Direction dir, std::map<std::string, std::string> args);
-            Request(Direction dir);
+            Request(unsigned char dir, std::map<std::string, std::string> args);
+            Request(unsigned char dir);
+            unsigned char getDirection();
             std::map<std::string, std::string> getArgs();
             std::string getArg(std::string name);
+        private:
+            unsigned char dir;
+            std::map<std::string, std::string> args;
     };
 
 }
