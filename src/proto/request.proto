@@ -2,12 +2,20 @@ syntax = "proto3";
 
 package CodecServer.proto;
 
-message Request {
-  string codec = 1;
+message Settings {
   enum Direction {
     ENCODE = 0;
     DECODE = 1;
   }
-  repeated Direction direction = 2;
-  map<string, string> args = 3;
+  repeated Direction directions = 2;
+  map<string, string> args = 1;
+}
+
+message Request {
+  string codec = 1;
+  Settings settings = 3;
+}
+
+message Renegotiation {
+  Settings settings = 1;
 }

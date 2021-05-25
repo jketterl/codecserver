@@ -32,3 +32,22 @@ CodecServer::proto::FramingHint* DvStickSession::getFraming() {
     }
     return nullptr;
 }
+
+void DvStickSession::renegotiate(CodecServer::proto::Settings settings) {
+    std::map<std::string, std::string> args(settings.args().begin(), settings.args().end());
+    std::string indexStr = args["index"];
+    std::cout << "renegotiating: index: " << indexStr << "; direction: ";
+    unsigned char index = std::stoi(indexStr);
+    unsigned char direction = 0;
+    for (int direction: settings.directions()) {
+        if (direction == Settings_Direction_ENCODE) {
+            direction |= DV3K_DIRECTION_ENCODE;
+            std::cout << "enccode ";
+        } else if (direction == Settings_Direction_DECODE) {
+            direction |= DV3K_DIRECTION_DECODE;
+            std::cout << "decode ";
+        }
+    }
+    std::cout << "\n";
+    channel->setup(index, direction);
+}

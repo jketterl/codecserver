@@ -1,9 +1,11 @@
 #pragma once
 
-#include "request.hpp"
+#include "request.pb.h"
 #include "session.hpp"
 #include <vector>
 #include <string>
+
+using namespace CodecServer::proto;
 
 namespace CodecServer {
     class Device {

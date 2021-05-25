@@ -53,9 +53,10 @@ int Cli::main(int argc, char** argv) {
 
     Request request;
     request.set_codec("ambe");
-    request.clear_direction();
-    request.mutable_direction()->Add(Request_Direction_DECODE);
-    (*request.mutable_args())["index"] = "33";
+    Settings* settings = request.mutable_settings();
+    settings->clear_directions();
+    settings->mutable_directions()->Add(Settings_Direction_DECODE);
+    (*settings->mutable_args())["index"] = "33";
     connection->sendMessage(&request);
 
     message = connection->receiveMessage();

@@ -2,6 +2,9 @@
 
 #include <unistd.h>
 #include "framing.pb.h"
+#include "request.pb.h"
+
+using namespace CodecServer::proto;
 
 namespace CodecServer {
 
@@ -12,6 +15,7 @@ namespace CodecServer {
             virtual size_t read(char* output) = 0;
             virtual void end() {};
             virtual CodecServer::proto::FramingHint* getFraming() { return nullptr; }
+            virtual void renegotiate(Settings settings) {};
     };
 
 }

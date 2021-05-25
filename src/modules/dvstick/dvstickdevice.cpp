@@ -22,22 +22,21 @@ std::vector<std::string> Device::getCodecs() {
     return { "ambe" };
 }
 
-CodecServer::Session* Device::startSession(CodecServer::Request* request) {
+CodecServer::Session* Device::startSession(CodecServer::proto::Request* request) {
     for (Channel* channel: channels) {
         // TODO lock?
         if (!channel->isBusy()) {
             std::cerr << "starting new session on channel " << +channel->getIndex() << "\n";
             channel->reserve();
+            DvStickSession* session = new DvStickSession(channel);
             try {
-                std::string indexStr = request->getArg("index");
-                std::cerr << "requested index: " << indexStr << "\n";
-                unsigned char index = std::stoi(indexStr);
-                channel->setup(index, request->getDirection());
-                return new DvStickSession(channel);
+                session->renegotiate(request->settings());
+                return session;
             } catch (std::invalid_argument) {
                 std::cerr << "invalid or unsupported channel index\n";
                 return nullptr;
             }
+            session->end();
         }
     }
     return nullptr;

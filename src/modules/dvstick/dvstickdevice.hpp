@@ -3,6 +3,7 @@
 #include "device.hpp"
 #include "protocol.hpp"
 #include "blockingqueue.hpp"
+#include "request.pb.h"
 
 namespace DvStick {
 
@@ -14,7 +15,7 @@ namespace DvStick {
         public:
             Device(std::string tty, unsigned int baudRate);
             std::vector<std::string> getCodecs() override;
-            CodecServer::Session* startSession(CodecServer::Request* request) override;
+            CodecServer::Session* startSession(CodecServer::proto::Request* request) override;
             void writePacket(DvStick::Protocol::Packet* packet);
             void receivePacket(DvStick::Protocol::Packet* packet);
             // TODO privatize

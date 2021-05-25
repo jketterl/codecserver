@@ -4,7 +4,6 @@
 #include "request.pb.h"
 #include "response.pb.h"
 #include "data.pb.h"
-#include "request.hpp"
 #include "registry.hpp"
 #include <iostream>
 #include <netinet/in.h>
@@ -21,29 +20,16 @@ void ClientConnection::handshake() {
     sendMessage(&handshake);
 
     google::protobuf::Any* message = receiveMessage();
-    if (!message->Is<CodecServer::proto::Request>()) {
+    if (!message->Is<Request>()) {
         std::cerr << "invalid message\n";
         return;
     }
-    CodecServer::proto::Request request;
+    Request request;
     message->UnpackTo(&request);
-    std::cout << "client requests codec " << request.codec() << " and direction(s): ";
-    std::map<std::string, std::string> args(request.args().begin(), request.args().end());
-    unsigned char dir = 0;
-    for (int direction: request.direction()) {
-        if (direction == Request_Direction_ENCODE) {
-            dir |= DIRECTION_ENCODE;
-            std::cout << "enccode ";
-        } else if (direction == Request_Direction_DECODE) {
-            dir |= DIRECTION_DECODE;
-            std::cout << "decode ";
-        }
-    }
-    std::cout << "\n";
-    Request* codecRequest = new Request(dir, args);
+    std::cout << "client requests codec " << request.codec() << "\n";
 
     for (Device* device: Registry::get()->findDevices(request.codec())) {
-        session = device->startSession(codecRequest);
+        session = device->startSession(&request);
         if (session != nullptr) break;
     }
 
@@ -82,6 +68,19 @@ void ClientConnection::loop() {
             std::string input = data->data();
             session->process((char*) input.c_str(), input.length());
             delete data;
+        } else if (message->Is<Renegotiation>()) {
+            Renegotiation* reneg = new Renegotiation();
+            message->UnpackTo(reneg);
+            Response* response = new Response();
+            try {
+                session->renegotiate(reneg->settings());
+                response->set_result(Response_Status_OK);
+            } catch (const std::exception&) {
+                response->set_result(Response_Status_ERROR);
+            }
+            sendMessage(response);
+            delete response;
+            delete reneg;
         } else {
             std::cerr << "received unexpected message type\n";
         }
