@@ -3,6 +3,8 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/any.pb.h>
 
+using namespace google::protobuf::io;
+
 namespace CodecServer {
 
     class Connection {
