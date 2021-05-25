@@ -4,6 +4,7 @@
 #include "request.pb.h"
 #include "response.pb.h"
 #include "framing.pb.h"
+#include "data.pb.h"
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/select.h>
@@ -13,6 +14,7 @@
 #include <google/protobuf/any.pb.h>
 
 using namespace CodecServer;
+using namespace CodecServer::proto;
 
 int Cli::main(int argc, char** argv) {
     sockaddr_un addr;
@@ -34,12 +36,12 @@ int Cli::main(int argc, char** argv) {
 
     Connection* connection = new Connection(sock);
     google::protobuf::Any* message = connection->receiveMessage();
-    if (!message->Is<CodecServer::proto::Handshake>()) {
+    if (!message->Is<Handshake>()) {
         std::cerr << "unexpected message\n";
         return 1;
     }
 
-    CodecServer::proto::Handshake handshake;
+    Handshake handshake;
     message->UnpackTo(&handshake);
 
     std::cerr << "received handshake from " << handshake.servername() << "\n";
@@ -49,23 +51,23 @@ int Cli::main(int argc, char** argv) {
         return 1;
     }
 
-    CodecServer::proto::Request request;
+    Request request;
     request.set_codec("ambe");
     request.clear_direction();
-    request.mutable_direction()->Add(CodecServer::proto::Request_Direction_DECODE);
+    request.mutable_direction()->Add(Request_Direction_DECODE);
     (*request.mutable_args())["index"] = "33";
     connection->sendMessage(&request);
 
     message = connection->receiveMessage();
-    if (!message->Is<CodecServer::proto::Response>()) {
+    if (!message->Is<Response>()) {
         std::cerr << "response error\n";
         return 1;
     }
 
-    CodecServer::proto::Response response;
+    Response response;
     message->UnpackTo(&response);
 
-    if (response.result() != CodecServer::proto::Response_Status_OK) {
+    if (response.result() != Response_Status_OK) {
         std::cerr << "server replied with error, message: " << response.message() << "\n";
         return 1;
     }
@@ -74,12 +76,11 @@ int Cli::main(int argc, char** argv) {
         std::cerr << "framing info is not available\n";
         return 1;
     }
-    CodecServer::proto::FramingHint framing = response.framing();
+    FramingHint framing = response.framing();
 
     std::cerr << "server response OK, start decoding!\n";
 
-    void* in_buf = malloc(framing.channelbytes());
-    void* out_buf = malloc(framing.audiobytes());
+    char* in_buf = (char*) malloc(framing.channelbytes());
     fd_set read_fds;
     struct timeval tv;
     tv.tv_sec = 10;
@@ -103,16 +104,20 @@ int Cli::main(int argc, char** argv) {
                     run = false;
                     break;
                 }
-                send(sock, in_buf, size, MSG_NOSIGNAL);
+                connection->sendChannelData(in_buf, size);
             }
             if (FD_ISSET(sock, &read_fds)) {
-                size_t size = recv(sock, out_buf, framing.audiobytes(), 0);
-                if (size <= 0) {
-                    run = false;
-                    break;
+                google::protobuf::Any* message = connection->receiveMessage();
+                if (message->Is<SpeechData>()) {
+                    SpeechData* data = new SpeechData();
+                    message->UnpackTo(data);
+                    std::string output = data->data();
+                    fwrite(output.data(), sizeof(char), output.length(), stdout);
+                    fflush(stdout);
+                    delete data;
+                } else {
+                    std::cerr << "received unexpected message type\n";
                 }
-                fwrite(out_buf, sizeof(char), size, stdout);
-                fflush(stdout);
             }
         } else {
             // no data, just timeout.
@@ -121,7 +126,6 @@ int Cli::main(int argc, char** argv) {
     }
 
     free(in_buf);
-    free(out_buf);
 
     ::close(sock);
 

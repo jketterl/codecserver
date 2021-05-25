@@ -23,7 +23,6 @@ namespace CodecServer {
             void handshake();
             void loop();
             void read();
-            void close();
             bool run = true;
             Session* session;
     };

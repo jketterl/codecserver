@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package CodecServer.proto;
+
+message ChannelData {
+  bytes data = 1;
+}
+
+message SpeechData {
+  bytes data = 1;
+}

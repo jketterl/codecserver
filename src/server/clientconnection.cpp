@@ -3,6 +3,7 @@
 #include "handshake.pb.h"
 #include "request.pb.h"
 #include "response.pb.h"
+#include "data.pb.h"
 #include "request.hpp"
 #include "registry.hpp"
 #include <iostream>
@@ -10,10 +11,11 @@
 #include <google/protobuf/any.pb.h>
 
 using namespace CodecServer;
+using namespace CodecServer::proto;
 
 void ClientConnection::handshake() {
     GOOGLE_PROTOBUF_VERIFY_VERSION;
-    CodecServer::proto::Handshake handshake;
+    Handshake handshake;
     handshake.set_servername("codecserver");
     handshake.set_serverversion(VERSION);
     sendMessage(&handshake);
@@ -29,10 +31,10 @@ void ClientConnection::handshake() {
     std::map<std::string, std::string> args(request.args().begin(), request.args().end());
     unsigned char dir = 0;
     for (int direction: request.direction()) {
-        if (direction == CodecServer::proto::Request_Direction_ENCODE) {
+        if (direction == Request_Direction_ENCODE) {
             dir |= DIRECTION_ENCODE;
             std::cout << "enccode ";
-        } else if (direction == CodecServer::proto::Request_Direction_DECODE) {
+        } else if (direction == Request_Direction_DECODE) {
             dir |= DIRECTION_DECODE;
             std::cout << "decode ";
         }
@@ -45,16 +47,16 @@ void ClientConnection::handshake() {
         if (session != nullptr) break;
     }
 
-    CodecServer::proto::Response response;
+    Response response;
     if (session == nullptr) {
-        response.set_result(CodecServer::proto::Response_Status_ERROR);
+        response.set_result(Response_Status_ERROR);
         response.set_message("no device available");
         sendMessage(&response);
         return;
     }
 
-    response.set_result(CodecServer::proto::Response_Status_OK);
-    CodecServer::proto::FramingHint* framing = session->getFraming();
+    response.set_result(Response_Status_OK);
+    FramingHint* framing = session->getFraming();
     if (framing != nullptr) {
         response.set_allocated_framing(framing);
     }
@@ -70,11 +72,23 @@ void ClientConnection::loop() {
     });
 
     while (run) {
-        size_t size = recv(sock, input, BUFFER_SIZE, 0);
-        if (size <= 0) {
+        google::protobuf::Any* message = receiveMessage();
+        if (message == nullptr) {
             run = false;
+            close();
+        } else if (message->Is<ChannelData>()) {
+            ChannelData* data = new ChannelData();
+            message->UnpackTo(data);
+            std::string input = data->data();
+            session->process((char*) input.c_str(), input.length());
+            delete data;
+        } else {
+            std::cerr << "received unexpected message type\n";
         }
-        session->process(input, size);
+
+        delete message;
+
+        // TODO SpeechData
     }
 
 
@@ -87,10 +101,9 @@ void ClientConnection::read() {
     char* output = (char*) malloc(BUFFER_SIZE);
     while (run) {
         size = session->read(output);
-        send(sock, output, size, MSG_NOSIGNAL);
+        SpeechData* data = new SpeechData();
+        data->set_data(std::string(output, size));
+        sendMessage(data);
+        delete data;
     }
-}
-
-void ClientConnection::close() {
-    ::close(sock);
 }

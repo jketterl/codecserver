@@ -1,5 +1,5 @@
 set(CMAKE_POSITION_INDEPENDENT_CODE On)
-add_library(codecserver_proto STATIC framing.proto handshake.proto request.proto response.proto)
-protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS framing.proto handshake.proto request.proto response.proto)
+add_library(codecserver_proto STATIC framing.proto handshake.proto request.proto response.proto data.proto)
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS framing.proto handshake.proto request.proto response.proto data.proto)
 protobuf_generate(TARGET codecserver_proto)
 set(codecserver_proto_includes ${CMAKE_CURRENT_BINARY_DIR} PARENT_SCOPE)
