@@ -6,6 +6,8 @@
 #include <cstring>
 #include <cassert>
 
+#include <iostream>
+
 #define DV3K_START_BYTE 0x61
 #define DV3K_PARITY_BYTE 0x2f
 
@@ -114,15 +116,15 @@ namespace DvStick::Protocol {
 
     class ChannelPacket: public Packet {
         public:
-            ChannelPacket(unsigned char channel, char* channelData, size_t size): Packet(size + 9) {
+            ChannelPacket(unsigned char channel, char* channelData, unsigned char bits): Packet(((int) (bits + 7) / 8) + 9) {
                 setType(DV3K_TYPE_AMBE);
                 // channel to be used
                 payload[0] = 0x40 + channel;
                 // CHAND
                 payload[1] = 0x01;
                 // number of bits
-                payload[2] = size * 8;
-                memcpy(payload + 3, channelData, size);
+                payload[2] = bits;
+                memcpy(payload + 3, channelData, (int) ((bits + 7) / 8));
             }
     };
 

@@ -21,16 +21,17 @@ void DvStickSession::end() {
 }
 
 CodecServer::proto::FramingHint* DvStickSession::getFraming() {
-    switch (channel->getCodecIndex()) {
-        case 33:
-            CodecServer::proto::FramingHint* framing = new CodecServer::proto::FramingHint();
-            framing->set_channelbits(72);
-            framing->set_channelbytes(9);
-            framing->set_audiosamples(160);
-            framing->set_audiobytes(320);
-            return framing;
+    unsigned char bits = channel->getFramingBits();
+    if (bits == 0) {
+        return nullptr;
     }
-    return nullptr;
+    CodecServer::proto::FramingHint* framing;
+    framing = new CodecServer::proto::FramingHint();
+    framing->set_channelbits(bits);
+    framing->set_channelbytes((int)((bits + 7) / 8));
+    framing->set_audiosamples(160);
+    framing->set_audiobytes(320);
+    return framing;
 }
 
 void DvStickSession::renegotiate(CodecServer::proto::Settings settings) {

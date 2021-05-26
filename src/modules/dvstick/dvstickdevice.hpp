@@ -40,6 +40,7 @@ namespace DvStick {
             void release();
             void setup(unsigned char codecIndex, unsigned char direction);
             unsigned char getCodecIndex();
+            unsigned char getFramingBits();
         private:
             bool busy = false;
             Device* device;

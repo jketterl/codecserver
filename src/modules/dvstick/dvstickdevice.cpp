@@ -154,12 +154,20 @@ Channel::Channel(Device* device, unsigned char index) {
     this->index = index;
 }
 
-void Channel::process(char* input, size_t size) {
-    int processed = 0;
-    while (processed < size / 9) {
-        device->writePacket(new ChannelPacket(index, input + processed * 9, 9));
-        processed += 1;
+unsigned char Channel::getFramingBits() {
+    switch (getCodecIndex()) {
+        case 33:
+            return 72;
+        case 34:
+            return 49;
+        case 59:
+            return 144;
     }
+    return 0;
+}
+
+void Channel::process(char* input, size_t size) {
+    device->writePacket(new ChannelPacket(index, input, getFramingBits()));
 }
 
 void Channel::receive(SpeechPacket* packet) {
