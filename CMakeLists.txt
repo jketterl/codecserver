@@ -4,7 +4,7 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
 
-project (owrx-connector VERSION 0.1.0)
+project (codecserver VERSION 0.1.0)
 add_definitions(-DVERSION="${PROJECT_VERSION}-dev")
 
 enable_language(CXX)
