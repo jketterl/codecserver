@@ -118,12 +118,50 @@ size_t Packet::getPayloadLength() {
     return dataSize - 6;
 }
 
+ControlPacket::ControlPacket(size_t bytes): Packet(bytes) {
+    setType(DV3K_TYPE_CONTROL);
+}
+
+ResetPacket::ResetPacket(): ControlPacket(7) {
+    payload[0] = DV3K_CONTROL_RESET;
+}
+
+ProdIdRequest::ProdIdRequest(): ControlPacket(7) {
+    payload[0] = DV3K_CONTROL_PRODID;
+}
+
 std::string ProdIdResponse::getProductId() {
     return std::string(payload + 1, getPayloadLength() - 1);
 }
 
+VersionStringRequest::VersionStringRequest(): ControlPacket(7) {
+    payload[0] = DV3K_CONTROL_VERSTRING;
+}
+
 std::string VersionStringResponse::getVersionString() {
     return std::string(payload + 1, getPayloadLength() - 1);
+}
+
+SetupRequest::SetupRequest(unsigned char channel, unsigned char index, unsigned char direction): ControlPacket(11) {
+    assert(channel <= 3);
+    payload[0] = 0x40 + channel;
+    payload[1] = DV3K_CONTROL_RATET;
+    payload[2] = index;
+    // string in the init, too
+    payload[3] = DV3K_CONTROL_INIT;
+    payload[4] = direction;
+}
+
+SetupRequest::SetupRequest(unsigned char channel, short* cwds, unsigned char direction): ControlPacket(22) {
+    assert(channel <= 3);
+    payload[0] = 0x40 + channel;
+    payload[1] = DV3K_CONTROL_RATEP;
+    short* output = (short*)(payload + 2);
+    for (int i = 0; i < 6; i++) {
+        output[i] = htons(cwds[i]);
+    }
+    payload[14] = DV3K_CONTROL_INIT;
+    payload[15] = direction;
 }
 
 unsigned char RateTResponse::getChannel() {
@@ -141,6 +179,17 @@ unsigned char RatePResponse::getChannel() {
 
 char RatePResponse::getResult() {
     return payload[3];
+}
+
+ChannelPacket::ChannelPacket(unsigned char channel, char* channelData, unsigned char bits): Packet(((int) (bits + 7) / 8) + 9) {
+    setType(DV3K_TYPE_AMBE);
+    // channel to be used
+    payload[0] = 0x40 + channel;
+    // CHAND
+    payload[1] = 0x01;
+    // number of bits
+    payload[2] = bits;
+    memcpy(payload + 3, channelData, (int) ((bits + 7) / 8));
 }
 
 size_t SpeechPacket::getSpeechData(char* output) {

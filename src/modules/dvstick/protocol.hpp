@@ -56,13 +56,13 @@ namespace DvStick::Protocol {
 
     class ControlPacket: public Packet {
         public:
-            ControlPacket(size_t bytes): Packet(bytes) { setType(DV3K_TYPE_CONTROL); }
+            ControlPacket(size_t bytes);
             ControlPacket(char* payload, size_t bytes): Packet(payload, bytes) {}
     };
 
     class ResetPacket: public ControlPacket {
         public:
-            ResetPacket(): ControlPacket(7) { payload[0] = DV3K_CONTROL_RESET; }
+            ResetPacket();
     };
 
     class ReadyPacket: public ControlPacket {
@@ -72,7 +72,7 @@ namespace DvStick::Protocol {
 
     class ProdIdRequest: public ControlPacket {
         public:
-            ProdIdRequest(): ControlPacket(7) { payload[0] = DV3K_CONTROL_PRODID; }
+            ProdIdRequest();
     };
 
     class ProdIdResponse: public ControlPacket {
@@ -83,7 +83,7 @@ namespace DvStick::Protocol {
 
     class VersionStringRequest: public ControlPacket {
         public:
-            VersionStringRequest(): ControlPacket(7) { payload[0] = DV3K_CONTROL_VERSTRING; }
+            VersionStringRequest();
     };
 
     class VersionStringResponse: public ControlPacket {
@@ -95,26 +95,8 @@ namespace DvStick::Protocol {
     // DMR rate 3600/2450: rate index 33
     class SetupRequest: public ControlPacket{
         public:
-            SetupRequest(unsigned char channel, unsigned char index, unsigned char direction): ControlPacket(11) {
-                assert(channel <= 3);
-                payload[0] = 0x40 + channel;
-                payload[1] = DV3K_CONTROL_RATET;
-                payload[2] = index;
-                // string in the init, too
-                payload[3] = DV3K_CONTROL_INIT;
-                payload[4] = direction;
-            }
-            SetupRequest(unsigned char channel, short* cwds, unsigned char direction): ControlPacket(22) {
-                assert(channel <= 3);
-                payload[0] = 0x40 + channel;
-                payload[1] = DV3K_CONTROL_RATEP;
-                short* output = (short*)(payload + 2);
-                for (int i = 0; i < 6; i++) {
-                    output[i] = htons(cwds[i]);
-                }
-                payload[14] = DV3K_CONTROL_INIT;
-                payload[15] = direction;
-            }
+            SetupRequest(unsigned char channel, unsigned char index, unsigned char direction);
+            SetupRequest(unsigned char channel, short* cwds, unsigned char direction);
     };
 
     class RateTResponse: public ControlPacket {
@@ -133,16 +115,7 @@ namespace DvStick::Protocol {
 
     class ChannelPacket: public Packet {
         public:
-            ChannelPacket(unsigned char channel, char* channelData, unsigned char bits): Packet(((int) (bits + 7) / 8) + 9) {
-                setType(DV3K_TYPE_AMBE);
-                // channel to be used
-                payload[0] = 0x40 + channel;
-                // CHAND
-                payload[1] = 0x01;
-                // number of bits
-                payload[2] = bits;
-                memcpy(payload + 3, channelData, (int) ((bits + 7) / 8));
-            }
+            ChannelPacket(unsigned char channel, char* channelData, unsigned char bits);
     };
 
     class SpeechPacket: public Packet {
