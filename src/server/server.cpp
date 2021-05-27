@@ -55,10 +55,12 @@ void Server::serve() {
     }
 
     while (run) {
-        std::cout << "starting accept...\n";
         int client_sock = accept(sock, NULL, NULL);
         if (client_sock > 0) {
-            new ClientConnection(client_sock);
+            std::thread t([client_sock] {
+                new ClientConnection(client_sock);
+            });
+            t.detach();
         }
     }
 

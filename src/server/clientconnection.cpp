@@ -12,6 +12,16 @@
 using namespace CodecServer;
 using namespace CodecServer::proto;
 
+ClientConnection::ClientConnection(int sock): Connection(sock) {
+    try {
+        handshake();
+        loop();
+    } catch (ConnectionException e) {
+        std::cerr << "connection error: " << e.what() << "\n";
+    }
+    close();
+}
+
 void ClientConnection::handshake() {
     GOOGLE_PROTOBUF_VERIFY_VERSION;
     Handshake handshake;
@@ -22,13 +32,11 @@ void ClientConnection::handshake() {
     google::protobuf::Any* message = receiveMessage();
 
     if (message == nullptr) {
-        std::cerr << "no message\n";
-        return;
+        throw ConnectionException("connection closed before request");
     }
 
     if (!message->Is<Request>()) {
-        std::cerr << "invalid message\n";
-        return;
+        throw ConnectionException("unexepected message type receive (expecting Request)");
     }
     Request request;
     message->UnpackTo(&request);
@@ -56,7 +64,6 @@ void ClientConnection::handshake() {
 }
 
 void ClientConnection::loop() {
-    char* input = (char*) malloc(BUFFER_SIZE);
     session->start();
 
     std::thread reader = std::thread( [this] {

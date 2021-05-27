@@ -9,16 +9,7 @@ namespace CodecServer {
 
     class ClientConnection: public Connection {
         public:
-            ClientConnection(int sock): Connection(sock) {
-                std::thread thread = std::thread( [this] {
-                    handshake();
-                    if (session != nullptr) {
-                        loop();
-                    }
-                    close();
-                });
-                thread.detach();
-            }
+            ClientConnection(int sock);
         private:
             void handshake();
             void loop();
