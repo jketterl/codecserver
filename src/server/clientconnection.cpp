@@ -52,7 +52,8 @@ void ClientConnection::handshake() {
         response.set_result(Response_Status_ERROR);
         response.set_message("no device available");
         sendMessage(&response);
-        return;
+
+        throw ConnectionException("no device available");
     }
 
     response.set_result(Response_Status_OK);
