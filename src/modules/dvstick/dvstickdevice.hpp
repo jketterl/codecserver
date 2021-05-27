@@ -14,6 +14,7 @@ namespace DvStick {
     class Device: public CodecServer::Device {
         public:
             Device(std::string tty, unsigned int baudRate);
+            ~Device();
             std::vector<std::string> getCodecs() override;
             CodecServer::Session* startSession(CodecServer::proto::Request* request) override;
             void writePacket(DvStick::Protocol::Packet* packet);
@@ -31,6 +32,7 @@ namespace DvStick {
     class Channel {
         public:
             Channel(Device* device, unsigned char index);
+            ~Channel();
             void process(char* input, size_t size);
             void receive(DvStick::Protocol::SpeechPacket* speech);
             size_t read(char* output);
@@ -52,6 +54,7 @@ namespace DvStick {
     class QueueWorker {
         public:
             QueueWorker(Device* device, BlockingQueue<DvStick::Protocol::Packet*>* queue);
+            ~QueueWorker();
         private:
             void run();
             Device* device;

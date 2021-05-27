@@ -18,6 +18,14 @@ Device::Device(std::string tty, unsigned int baudRate) {
     init();
 }
 
+Device::~Device() {
+    delete worker;
+    delete queue;
+    for (Channel* c: channels) {
+        delete c;
+    }
+}
+
 std::vector<std::string> Device::getCodecs() {
     return { "ambe" };
 }
@@ -37,6 +45,7 @@ CodecServer::Session* Device::startSession(CodecServer::proto::Request* request)
                 return nullptr;
             }
             session->end();
+            delete session;
         }
     }
     return nullptr;
@@ -80,7 +89,8 @@ void Device::open(std::string ttyname, unsigned int baudRate) {
 }
 
 void Device::init() {
-    (new ResetPacket())->writeTo(fd);
+    ResetPacket reset;
+    reset.writeTo(fd);
 
     Packet* response = Packet::receiveFrom(fd);
     if (response == nullptr) {
@@ -90,11 +100,14 @@ void Device::init() {
 
     ReadyPacket* ready = dynamic_cast<ReadyPacket*>(response);
     if (ready == nullptr) {
+        delete response;
         std::cerr << "unexpected response from stick\n";
         return;
     }
+    delete ready;
 
-    (new ProdIdRequest())->writeTo(fd);
+    ProdIdRequest prodIdRequest;
+    prodIdRequest.writeTo(fd);
 
     response = Packet::receiveFrom(fd);
     if (response == nullptr) {
@@ -104,11 +117,13 @@ void Device::init() {
 
     ProdIdResponse* prodid = dynamic_cast<ProdIdResponse*>(response);
     if (prodid == nullptr) {
+        delete response;
         std::cerr << "unexpected response from stick\n";
         return;
     }
 
-    (new VersionStringRequest())->writeTo(fd);
+    VersionStringRequest versionStringRequest;
+    versionStringRequest.writeTo(fd);
 
     response = Packet::receiveFrom(fd);
     if (response == nullptr) {
@@ -118,11 +133,14 @@ void Device::init() {
 
     VersionStringResponse* versionString = dynamic_cast<VersionStringResponse*>(response);
     if (versionString == nullptr) {
+        delete response;
         std::cerr << "unexpected response from stick\n";
         return;
     }
 
     std::cerr << "Product id: " << prodid->getProductId() << "; Version: " << versionString->getVersionString() << "\n";
+    delete prodid;
+    delete versionString;
 
     // TODO check product id and initialize number of channels
     for (unsigned char i = 0; i < 3; i++) {
@@ -143,15 +161,21 @@ void Device::receivePacket(Packet* packet) {
     }
     RateTResponse* response = dynamic_cast<RateTResponse*>(packet);
     if (response != nullptr) {
+        delete response;
         std::cerr << "setup response received\n";
         return;
     }
-    std::cerr << "response is not speech\n";
+    delete packet;
+    std::cerr << "unexpected packet received from stick\n";
 }
 
 Channel::Channel(Device* device, unsigned char index) {
     this->device = device;
     this->index = index;
+}
+
+Channel::~Channel() {
+    release();
 }
 
 unsigned char Channel::getFramingBits() {
@@ -173,6 +197,7 @@ void Channel::process(char* input, size_t size) {
 void Channel::receive(SpeechPacket* packet) {
     // TODO lock to make sure that queue doesn't go away after...
     if (queue == nullptr) {
+        delete packet;
         std::cerr << "received packet while channel is not active. recent shutdown?\n";
         return;
     }
@@ -184,7 +209,9 @@ size_t Channel::read(char* output) {
     if (packet == nullptr) {
         return 0;
     }
-    return packet->getSpeechData(output);
+    size_t size = packet->getSpeechData(output);
+    delete packet;
+    return size;
 }
 
 unsigned char Channel::getIndex() {
@@ -201,8 +228,10 @@ void Channel::reserve() {
 }
 
 void Channel::release() {
-    delete queue;
-    queue=nullptr;
+    if (queue != nullptr) {
+        delete queue;
+        queue=nullptr;
+    }
     busy = false;
 }
 
@@ -224,12 +253,17 @@ QueueWorker::QueueWorker(Device* device, BlockingQueue<Packet*>* queue) {
     thread.detach();
 }
 
+QueueWorker::~QueueWorker() {
+    dorun = false;
+}
+
 void QueueWorker::run() {
     size_t in_progress = 0;
     while (dorun) {
         while ((!queue->empty() && in_progress < DV3K_FIFO_MAX_PENDING) || in_progress == 0) {
             Packet* packet = queue->pop();
             packet->writeTo(device->fd);
+            delete packet;
             in_progress += 1;
             //std::cerr << "  sent one packet, in_progress is now: " << in_progress << "\n";
         }

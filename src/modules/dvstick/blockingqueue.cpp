@@ -39,7 +39,6 @@ T BlockingQueue<T>::pop() {
 
 template <class T>
 BlockingQueue<T>::~BlockingQueue<T>() {
-    std::cerr << "shutting down queue\n";
     run = false;
     isEmpty.notify_all();
     isFull.notify_all();

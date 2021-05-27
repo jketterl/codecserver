@@ -11,6 +11,7 @@ namespace CodecServer {
     class Connection {
         public:
             Connection(int sock);
+            ~Connection();
             void sendMessage(google::protobuf::Message* message);
             google::protobuf::Any* receiveMessage();
             void sendChannelData(char* buffer, size_t size);

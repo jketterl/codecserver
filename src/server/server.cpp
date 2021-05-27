@@ -23,8 +23,8 @@ int Server::main(int argc, char** argv) {
     std::signal(SIGTERM, &signal_callback_function);
     std::signal(SIGQUIT, &signal_callback_function);
 
-    Scanner* scanner = new Scanner();
-    scanner->scanModules();
+    Scanner scanner;
+    scanner.scanModules();
 
     serve();
 

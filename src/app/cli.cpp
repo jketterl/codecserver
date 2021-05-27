@@ -145,6 +145,7 @@ int Cli::main(int argc, char** argv) {
     }
 
     free(in_buf);
+    delete connection;
 
     ::close(sock);
 

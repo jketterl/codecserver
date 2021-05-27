@@ -15,6 +15,10 @@ Connection::Connection(int sock) {
     inStream = new FileInputStream(sock);
 }
 
+Connection::~Connection() {
+    delete inStream;
+}
+
 void Connection::sendMessage(google::protobuf::Message* message) {
     google::protobuf::Any* any = new google::protobuf::Any();
     any->PackFrom(*message);
@@ -47,12 +51,14 @@ void Connection::sendChannelData(char* bytes, size_t size) {
     ChannelData* data = new ChannelData();
     data->set_data(std::string(bytes, size));
     sendMessage(data);
+    delete data;
 }
 
 void Connection::sendSpeechData(char* bytes, size_t size) {
     SpeechData* data = new SpeechData();
     data->set_data(std::string(bytes, size));
     sendMessage(data);
+    delete data;
 }
 
 void Connection::close() {

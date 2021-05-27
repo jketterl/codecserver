@@ -33,17 +33,22 @@ Packet* Packet::parse(char* data, size_t size) {
         }
         switch(opCode) {
             case DV3K_CONTROL_READY:
+                delete p;
                 return new ReadyPacket(data, size);
             case DV3K_CONTROL_PRODID:
+                delete p;
                 return new ProdIdResponse(data, size);
             case DV3K_CONTROL_VERSTRING:
+                delete p;
                 return new VersionStringResponse(data, size);
             case DV3K_CONTROL_RATET:
+                delete p;
                 return new RateTResponse(data, size);
             default:
                 std::cerr << "unexpected opcode: " << std::hex << +opCode << "\n";
         }
     } else if (type == DV3K_TYPE_AUDIO) {
+        delete p;
         return new SpeechPacket(data, size);
     }
     return p;
