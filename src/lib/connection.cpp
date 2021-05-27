@@ -64,3 +64,7 @@ void Connection::sendSpeechData(char* bytes, size_t size) {
 void Connection::close() {
     ::close(sock);
 }
+
+bool Connection::isCompatible(std::string version) {
+    return version == VERSION;
+}

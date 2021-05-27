@@ -20,6 +20,12 @@ void ClientConnection::handshake() {
     sendMessage(&handshake);
 
     google::protobuf::Any* message = receiveMessage();
+
+    if (message == nullptr) {
+        std::cerr << "no message\n";
+        return;
+    }
+
     if (!message->Is<Request>()) {
         std::cerr << "invalid message\n";
         return;

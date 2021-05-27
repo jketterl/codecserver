@@ -17,6 +17,7 @@ namespace CodecServer {
             void sendChannelData(char* buffer, size_t size);
             void sendSpeechData(char* buffer, size_t size);
             void close();
+            bool isCompatible(std::string version);
         private:
             int sock;
             FileInputStream* inStream;
