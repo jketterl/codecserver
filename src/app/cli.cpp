@@ -175,19 +175,18 @@ void Cli::switchMode(unsigned char new_mode) {
     Settings* settings = reneg.mutable_settings();
     settings->clear_directions();
     settings->mutable_directions()->Add(Settings_Direction_DECODE);
-    std::string index;
+    google::protobuf::Map<std::string, std::string>* args = settings->mutable_args();
     switch (new_mode) {
         case 0:
-            index = "33";
+            (*args)["index"] = "33";
             break;
         case 2:
-            index = "34";
+            (*args)["index"] = "34";
             break;
         case 3:
-            index = "59";
+            (*args)["ratep"] = "0558:086b:1030:0000:0000:0190";
             break;
     }
-    (*settings->mutable_args())["index"] = index;
 
     connection->sendMessage(&reneg);
     mode = new_mode;

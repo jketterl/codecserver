@@ -20,6 +20,7 @@ namespace DvStick {
             void renegotiate(Settings settings) override;
         private:
             Channel* channel;
+            short* parseRatePString(std::string input);
     };
 
 }

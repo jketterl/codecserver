@@ -159,10 +159,16 @@ void Device::receivePacket(Packet* packet) {
         channels[speech->getChannel()]->receive(speech);
         return;
     }
-    RateTResponse* response = dynamic_cast<RateTResponse*>(packet);
-    if (response != nullptr) {
-        delete response;
-        std::cerr << "setup response received\n";
+    RateTResponse* tResponse = dynamic_cast<RateTResponse*>(packet);
+    if (tResponse != nullptr) {
+        delete tResponse;
+        std::cerr << "setup response received, result = " << +tResponse->getResult() << "\n";
+        return;
+    }
+    RatePResponse* pResponse = dynamic_cast<RatePResponse*>(packet);
+    if (pResponse != nullptr) {
+        std::cerr << "setup response received, result = " << +pResponse->getResult() << "\n";
+        delete pResponse;
         return;
     }
     delete packet;
@@ -238,6 +244,11 @@ void Channel::release() {
 void Channel::setup(unsigned char codecIndex, unsigned char direction) {
     this->codecIndex = codecIndex;
     device->writePacket(new SetupRequest(index, codecIndex, direction));
+}
+
+void Channel::setup(short* cwds, unsigned char direction) {
+    codecIndex = 0;
+    device->writePacket(new SetupRequest(index, cwds, direction));
 }
 
 unsigned char Channel::getCodecIndex() {

@@ -41,6 +41,7 @@ namespace DvStick {
             void reserve();
             void release();
             void setup(unsigned char codecIndex, unsigned char direction);
+            void setup(short* cwds, unsigned char direction);
             unsigned char getCodecIndex();
             unsigned char getFramingBits();
         private:

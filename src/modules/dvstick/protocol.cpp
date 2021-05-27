@@ -1,6 +1,5 @@
 #include "protocol.hpp"
 #include <cassert>
-#include <arpa/inet.h> // htons
 #include <iostream>
 
 using namespace DvStick::Protocol;
@@ -44,6 +43,9 @@ Packet* Packet::parse(char* data, size_t size) {
             case DV3K_CONTROL_RATET:
                 delete p;
                 return new RateTResponse(data, size);
+            case DV3K_CONTROL_RATEP:
+                delete p;
+                return new RatePResponse(data, size);
             default:
                 std::cerr << "unexpected opcode: " << std::hex << +opCode << "\n";
         }
@@ -129,6 +131,15 @@ unsigned char RateTResponse::getChannel() {
 }
 
 char RateTResponse::getResult() {
+    return payload[3];
+}
+
+unsigned char RatePResponse::getChannel() {
+    return payload[0] - 0x40;
+}
+
+
+char RatePResponse::getResult() {
     return payload[3];
 }
 

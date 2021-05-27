@@ -1,6 +1,7 @@
 #include "dvsticksession.hpp"
 #include <cstring>
 #include <iostream>
+#include <sstream>
 
 using namespace DvStick;
 
@@ -35,20 +36,66 @@ CodecServer::proto::FramingHint* DvStickSession::getFraming() {
 }
 
 void DvStickSession::renegotiate(CodecServer::proto::Settings settings) {
+    std::cout << "renegotiating: direction:";
     std::map<std::string, std::string> args(settings.args().begin(), settings.args().end());
-    std::string indexStr = args["index"];
-    std::cout << "renegotiating: index: " << indexStr << "; direction: ";
-    unsigned char index = std::stoi(indexStr);
+
     unsigned char direction = 0;
-    for (int direction: settings.directions()) {
-        if (direction == Settings_Direction_ENCODE) {
+    for (int dir: settings.directions()) {
+        if (dir == Settings_Direction_ENCODE) {
             direction |= DV3K_DIRECTION_ENCODE;
-            std::cout << "enccode ";
-        } else if (direction == Settings_Direction_DECODE) {
+            std::cout << " enccode";
+        } else if (dir == Settings_Direction_DECODE) {
             direction |= DV3K_DIRECTION_DECODE;
-            std::cout << "decode ";
+            std::cout << " decode";
         }
     }
-    std::cout << "\n";
-    channel->setup(index, direction);
+
+    std::cout << "; ";
+
+    if (args.find("index") != args.end()) {
+        std::string indexStr = args["index"];
+        std::cout << "index: " << indexStr << "\n";
+        unsigned char index = std::stoi(indexStr);
+        channel->setup(index, direction);
+    } else if (args.find("ratep") != args.end()) {
+        std::string ratepStr = args["ratep"];
+        short* rateP = parseRatePString(ratepStr);
+        if (rateP == nullptr) {
+            std::cout << "invalid ratep string\n";
+        } else {
+            std::cout << "ratep: " << ratepStr << "\n";
+            channel->setup(rateP, direction);
+            free(rateP);
+        }
+    } else {
+        std::cout << "invalid parameters\n";
+    }
+}
+
+short* DvStickSession::parseRatePString(std::string input) {
+    if (input.length() != 29) return nullptr;
+    std::vector<std::string> parts;
+    size_t pos_start = 0, pos_end;
+    while ((pos_end = input.find(":", pos_start)) != std::string::npos) {
+        parts.push_back(input.substr(pos_start, pos_end - pos_start));
+        pos_start = pos_end + 1;
+    }
+    parts.push_back(input.substr(pos_start));
+
+    if (parts.size() != 6) return nullptr;
+
+    short* data = (short*) malloc(sizeof(short) * 6);
+    for (int i = 0; i < parts.size(); i++) {
+        std::string part = parts[i];
+        if (part.length() != 4) {
+            free(data);
+            return nullptr;
+        }
+
+        std::stringstream ss;
+        ss << std::hex << part;
+        ss >> data[i];
+    }
+
+    return data;
 }

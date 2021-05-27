@@ -5,8 +5,7 @@
 #include <stdlib.h>
 #include <cstring>
 #include <cassert>
-
-#include <iostream>
+#include <arpa/inet.h> // htons
 
 #define DV3K_START_BYTE 0x61
 #define DV3K_PARITY_BYTE 0x2f
@@ -105,11 +104,29 @@ namespace DvStick::Protocol {
                 payload[3] = DV3K_CONTROL_INIT;
                 payload[4] = direction;
             }
+            SetupRequest(unsigned char channel, short* cwds, unsigned char direction): ControlPacket(22) {
+                assert(channel <= 3);
+                payload[0] = 0x40 + channel;
+                payload[1] = DV3K_CONTROL_RATEP;
+                short* output = (short*)(payload + 2);
+                for (int i = 0; i < 6; i++) {
+                    output[i] = htons(cwds[i]);
+                }
+                payload[14] = DV3K_CONTROL_INIT;
+                payload[15] = direction;
+            }
     };
 
     class RateTResponse: public ControlPacket {
         public:
             RateTResponse(char* payload, size_t size): ControlPacket(payload, size) {}
+            unsigned char getChannel();
+            char getResult();
+    };
+
+    class RatePResponse: public ControlPacket {
+        public:
+            RatePResponse(char* payload, size_t size): ControlPacket(payload, size) {}
             unsigned char getChannel();
             char getResult();
     };
