@@ -8,10 +8,10 @@ template <class T>
 class BlockingQueue: public std::queue<T> {
     public:
         BlockingQueue(int size);
+        ~BlockingQueue();
         void push(T item);
         bool full();
         T pop();
-        void shutdown();
 
     private:
         int maxSize;

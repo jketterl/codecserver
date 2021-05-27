@@ -171,6 +171,11 @@ void Channel::process(char* input, size_t size) {
 }
 
 void Channel::receive(SpeechPacket* packet) {
+    // TODO lock to make sure that queue doesn't go away after...
+    if (queue == nullptr) {
+        std::cerr << "received packet while channel is not active. recent shutdown?\n";
+        return;
+    }
     queue->push(packet);
 }
 
@@ -191,12 +196,13 @@ bool Channel::isBusy() {
 }
 
 void Channel::reserve() {
-    queue = new BlockingQueue<SpeechPacket*>(10);
     busy = true;
+    queue = new BlockingQueue<SpeechPacket*>(10);
 }
 
 void Channel::release() {
-    queue->shutdown();
+    delete queue;
+    queue=nullptr;
     busy = false;
 }
 
