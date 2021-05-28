@@ -8,6 +8,7 @@
 #include <iostream>
 #include <csignal>
 #include <getopt.h>
+#include <functional>
 
 using namespace CodecServer;
 
