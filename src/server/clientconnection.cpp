@@ -1,4 +1,3 @@
-#include "config.h"
 #include "clientconnection.hpp"
 #include "handshake.pb.h"
 #include "request.pb.h"
@@ -8,6 +7,8 @@
 #include <iostream>
 #include <netinet/in.h>
 #include <google/protobuf/any.pb.h>
+
+#define BUFFER_SIZE 65536
 
 using namespace CodecServer;
 using namespace CodecServer::proto;

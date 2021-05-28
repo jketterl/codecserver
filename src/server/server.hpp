@@ -14,7 +14,7 @@ namespace CodecServer {
             void printUsage();
             void printVersion();
             void stop();
-            std::string config = CONFIG;
+            std::string configFile = CONFIG;
             int sock;
             bool run = true;
     };

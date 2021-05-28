@@ -1,6 +1,7 @@
 #include "server.hpp"
 #include "scanner.hpp"
 #include "clientconnection.hpp"
+#include "config.hpp"
 #include <iostream>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -20,6 +21,8 @@ int Server::main(int argc, char** argv) {
     if (!parseOptions(argc, argv)) {
         return 0;
     }
+
+    Config config(configFile);
 
     std::cout << "Hello, I'm the codecserver.\n";
 
@@ -53,7 +56,7 @@ bool Server::parseOptions(int argc, char** argv) {
                 printUsage();
                 return false;
             case 'c':
-                config = std::string(optarg);
+                configFile = std::string(optarg);
                 break;
         }
     }
