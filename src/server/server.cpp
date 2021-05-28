@@ -2,6 +2,8 @@
 #include "scanner.hpp"
 #include "clientconnection.hpp"
 #include "serverconfig.hpp"
+#include "registry.hpp"
+#include "driver.hpp"
 #include <iostream>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -22,8 +24,6 @@ int Server::main(int argc, char** argv) {
         return 0;
     }
 
-    ServerConfig config(configFile);
-
     std::cout << "Hello, I'm the codecserver.\n";
 
     signal_callback_wrapper = std::bind(&Server::handle_signal, this, std::placeholders::_1);
@@ -31,8 +31,15 @@ int Server::main(int argc, char** argv) {
     std::signal(SIGTERM, &signal_callback_function);
     std::signal(SIGQUIT, &signal_callback_function);
 
+    ServerConfig config(configFile);
+
     Scanner scanner;
     scanner.scanModules();
+
+    for (std::string device: config.getDevices()) {
+        std::map<std::string, std::string> args = config.getDeviceConfig(device);
+        Registry::get()->loadDeviceFromConfig(args);
+    }
 
     serve();
 

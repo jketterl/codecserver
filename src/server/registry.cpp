@@ -20,6 +20,19 @@ int Registry::_registerDriver(Driver* driver) {
     return 0;
 }
 
+void Registry::loadDeviceFromConfig(std::map<std::string, std::string> config) {
+    if (config.find("driver") == config.end()) {
+        std::cerr << "unable to load device: driver not specified\n";
+        return;
+    }
+    if (config.find(config["driver"]) == config.end()) {
+        std::cerr << "unable to load device: driver \"" << config["driver"] << "\" not available\n";
+        return;
+    }
+    Driver* driver = drivers[config["driver"]];
+    registerDevice(driver->buildFromConfiguration(config));
+}
+
 void Registry::registerDevice(Device* device) {
     std::cout << "registering new device for codecs: ";
 

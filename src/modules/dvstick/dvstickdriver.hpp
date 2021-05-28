@@ -9,8 +9,7 @@ namespace DvStick {
         public:
             std::string getIdentifier() override;
             std::vector<CodecServer::Device*> scanForDevices() override;
-            // TODO config typing
-            Device* buildFromConfiguration(void* config) override;
+            Device* buildFromConfiguration(std::map<std::string, std::string> config) override;
     };
 
 }

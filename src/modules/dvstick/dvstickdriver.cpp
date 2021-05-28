@@ -11,8 +11,7 @@ std::vector<CodecServer::Device*> Driver::scanForDevices() {
     return { new Device("/dev/ttyUSB0", 921600) };
 }
 
-// TODO config typing
-Device* Driver::buildFromConfiguration(void* config){
+Device* Driver::buildFromConfiguration(std::map<std::string, std::string> config){
     return nullptr;
 }
 

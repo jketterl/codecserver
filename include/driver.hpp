@@ -3,6 +3,7 @@
 #include "device.hpp"
 #include <string>
 #include <vector>
+#include <map>
 
 namespace CodecServer {
 
@@ -11,8 +12,7 @@ namespace CodecServer {
             virtual std::string getIdentifier() = 0;
             // default implementation is a NOOP
             virtual std::vector<Device*> scanForDevices() { return {}; };
-            // TODO config typing
-            virtual Device* buildFromConfiguration(void* config) = 0;
+            virtual Device* buildFromConfiguration(std::map<std::string, std::string> config) = 0;
     };
 
 }

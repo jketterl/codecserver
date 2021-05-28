@@ -11,6 +11,7 @@ namespace CodecServer {
         public:
             static Registry* get();
             static int registerDriver(Driver* driver);
+            void loadDeviceFromConfig(std::map<std::string, std::string> config);
             std::vector<Device*> findDevices(std::string identifier);
         private:
             std::map<std::string, Driver*> drivers;
