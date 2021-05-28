@@ -1,14 +1,11 @@
 #include "server.hpp"
 #include "scanner.hpp"
-#include "clientconnection.hpp"
 #include "serverconfig.hpp"
 #include "registry.hpp"
 #include "driver.hpp"
+#include "unixdomainsocketserver.hpp"
+#include "tcpserver.hpp"
 #include <iostream>
-#include <sys/socket.h>
-#include <sys/un.h>
-#include <unistd.h>
-#include <functional>
 #include <csignal>
 #include <getopt.h>
 
@@ -42,7 +39,25 @@ int Server::main(int argc, char** argv) {
         Registry::get()->loadDeviceFromConfig(args);
     }
 
-    serve();
+    for (std::string type: config.getServers()) {
+        std::map<std::string, std::string> args = config.getServerConfig(type);
+        if (type == "unixdomainsockets") {
+            UnixDomainSocketServer* server = new UnixDomainSocketServer(args);
+            servers.push_back(server);
+        } else if (type == "tcp") {
+            TcpServer* server = new TcpServer(args);
+            servers.push_back(server);
+        }
+    }
+
+    for (SocketServer* server: servers) {
+        server->start();
+    }
+
+    for (SocketServer* server: servers) {
+        server->join();
+        delete server;
+    }
 
     return 0;
 }
@@ -86,48 +101,13 @@ void Server::printVersion() {
     std::cout << "codecserver version " << VERSION << "\n";
 }
 
-void Server::serve() {
-    sockaddr_un addr;
-    memset(&addr, 0, sizeof(addr));
-    addr.sun_family = AF_UNIX;
-    const char* socket_path = "/tmp/codecserver.sock";
-    strncpy(addr.sun_path, socket_path, strlen(socket_path));
-
-    sock = socket(AF_UNIX, SOCK_STREAM, 0);
-    if (sock == -1) {
-        std::cout << "socket error\n";
-        return;
-    }
-
-    if (bind(sock, (sockaddr*) &addr, sizeof(addr)) == -1) {
-        std::cout << "bind error\n";
-        return;
-    }
-
-    if (listen(sock, 1) == -1) {
-        std::cout << "listen error\n";
-        return;
-    }
-
-    while (run) {
-        int client_sock = accept(sock, NULL, NULL);
-        if (client_sock > 0) {
-            std::thread t([client_sock] {
-                new ClientConnection(client_sock);
-            });
-            t.detach();
-        }
-    }
-
-    unlink(socket_path);
-}
-
 void Server::handle_signal(int signal) {
     std::cerr << "received signal: " << signal << "\n";
     stop();
 }
 
 void Server::stop() {
-    run = false;
-    ::close(sock);
+    for (SocketServer* server: servers) {
+        server->stop();
+    }
 }
