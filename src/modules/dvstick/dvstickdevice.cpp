@@ -4,8 +4,8 @@
 #include <iostream>
 #include <cstring>
 #include <fcntl.h>
-#include <termios.h>
 #include <thread>
+#include <stdexcept>
 
 namespace DvStick {
 
@@ -52,6 +52,8 @@ CodecServer::Session* Device::startSession(CodecServer::proto::Request* request)
 }
 
 void Device::open(std::string ttyname, unsigned int baudRate) {
+    speed_t baud = convertBaudrate(baudRate);
+
     fd = ::open(ttyname.c_str(), O_RDWR | O_NOCTTY /*| O_SYNC*/);
     if (fd < 0) {
         std::cerr << "could not open TTY: " << strerror(errno) << "\n";
@@ -69,7 +71,7 @@ void Device::open(std::string ttyname, unsigned int baudRate) {
         return;
     }
 
-    if (cfsetospeed(&tty, B921600) != 0) {
+    if (cfsetospeed(&tty, baud) != 0) {
         std::cerr << "cfsetospeed error: " << strerror(errno) << "\n";
         return;
     }
@@ -85,6 +87,49 @@ void Device::open(std::string ttyname, unsigned int baudRate) {
     if (tcsetattr(fd, TCSANOW, &tty) != 0) {
         std::cerr << "tcsetattr error: " << strerror(errno) << "\n";
         return;
+    }
+}
+
+speed_t Device::convertBaudrate(unsigned int baud) {
+    switch (baud) {
+        case 9600:
+            return B9600;
+        case 19200:
+            return B19200;
+        case 38400:
+            return B38400;
+        case 57600:
+            return B57600;
+        case 115200:
+            return B115200;
+        case 230400:
+            return B230400;
+        case 460800:
+            return B460800;
+        case 500000:
+            return B500000;
+        case 576000:
+            return B576000;
+        case 921600:
+            return B921600;
+        case 1000000:
+            return B1000000;
+        case 1152000:
+            return B1152000;
+        case 1500000:
+            return B1500000;
+        case 2000000:
+            return B2000000;
+        case 2500000:
+            return B2500000;
+        case 3000000:
+            return B3000000;
+        case 3500000:
+            return B3500000;
+        case 4000000:
+            return B4000000;
+        default:
+            throw std::runtime_error("invalid baud rate");
     }
 }
 

@@ -4,6 +4,7 @@
 #include "protocol.hpp"
 #include "blockingqueue.hpp"
 #include "request.pb.h"
+#include <termios.h>
 
 namespace DvStick {
 
@@ -23,6 +24,7 @@ namespace DvStick {
             int fd;
         private:
             void open(std::string tty, unsigned int baudRate);
+            speed_t convertBaudrate(unsigned int baudRate);
             void init();
             std::vector<Channel*> channels;
             BlockingQueue<DvStick::Protocol::Packet*>* queue;
