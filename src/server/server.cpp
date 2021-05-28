@@ -1,7 +1,7 @@
 #include "server.hpp"
 #include "scanner.hpp"
 #include "clientconnection.hpp"
-#include "config.hpp"
+#include "serverconfig.hpp"
 #include <iostream>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -22,7 +22,7 @@ int Server::main(int argc, char** argv) {
         return 0;
     }
 
-    Config config(configFile);
+    ServerConfig config(configFile);
 
     std::cout << "Hello, I'm the codecserver.\n";
 

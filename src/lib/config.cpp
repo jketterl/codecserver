@@ -53,3 +53,28 @@ void Config::read(std::ifstream& input) {
         sections[current_name] = current_map;
     }
 }
+
+
+std::vector<std::string> Config::getSections(std::string type) {
+    std::vector<std::string> result;
+    std::string prefix = type + ":";
+    int len = prefix.length();
+    for (auto const& element: sections) {
+        if (element.first.substr(0, len) == prefix) {
+            result.push_back(element.first.substr(len));
+        }
+    }
+    return result;
+}
+
+std::map<std::string, std::string> Config::getSection(std::string name) {
+    return sections[name];
+}
+
+std::vector<std::string> Config::getServers() {
+    return getSections("server");
+}
+
+std::map<std::string, std::string> Config::getServerConfig(std::string key) {
+    return getSection("server:" + key);
+}

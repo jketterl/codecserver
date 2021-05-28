@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <vector>
 #include <string>
 #include <fstream>
 #include <stdexcept>
@@ -15,9 +16,13 @@ namespace CodecServer {
     class Config {
         public:
             Config(std::string path);
-        private:
+            std::vector<std::string> getServers();
+            std::map<std::string, std::string> getServerConfig(std::string key);
+        protected:
             void read(std::ifstream& input);
             std::map<std::string, std::map<std::string, std::string>> sections;
+            std::vector<std::string> getSections(std::string type);
+            std::map<std::string, std::string> getSection(std::string name);
     };
 
 }
