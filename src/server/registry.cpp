@@ -30,7 +30,10 @@ void Registry::loadDeviceFromConfig(std::map<std::string, std::string> config) {
         return;
     }
     Driver* driver = drivers[config["driver"]];
-    registerDevice(driver->buildFromConfiguration(config));
+    Device* device = driver->buildFromConfiguration(config);
+    if (device != nullptr) {
+        registerDevice(device);
+    }
 }
 
 void Registry::registerDevice(Device* device) {
