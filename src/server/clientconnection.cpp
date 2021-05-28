@@ -114,9 +114,14 @@ void ClientConnection::read() {
     char* output = (char*) malloc(BUFFER_SIZE);
     while (run) {
         size = session->read(output);
+        if (size == 0) {
+            run = false;
+            break;
+        }
         SpeechData* data = new SpeechData();
         data->set_data(std::string(output, size));
         sendMessage(data);
         delete data;
     }
+    free(output);
 }
