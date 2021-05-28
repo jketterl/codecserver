@@ -26,6 +26,8 @@ namespace DvStick {
             void open(std::string tty, unsigned int baudRate);
             speed_t convertBaudrate(unsigned int baudRate);
             void init();
+            void createChannels(std::string prodId);
+            void createChannels(unsigned int num);
             std::vector<Channel*> channels;
             BlockingQueue<DvStick::Protocol::Packet*>* queue;
             QueueWorker* worker;

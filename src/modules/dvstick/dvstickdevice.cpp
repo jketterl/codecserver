@@ -184,14 +184,33 @@ void Device::init() {
     }
 
     std::cerr << "Product id: " << prodid->getProductId() << "; Version: " << versionString->getVersionString() << "\n";
+
+    createChannels(prodid->getProductId());
+
     delete prodid;
     delete versionString;
+}
 
-    // TODO check product id and initialize number of channels
-    for (unsigned char i = 0; i < 3; i++) {
-        channels.push_back(new Channel(this, i));
+void Device::createChannels(std::string prodId) {
+    if (prodId.substr(0, 8) == "AMBE3000") {
+        std::cerr << "detected AMBE3000, creating one channel\n";
+        createChannels(1);
+        return;
     }
 
+    if (prodId.substr(0, 8) == "AMBE3003") {
+        std::cerr << "detected AMBE3003, creating three channels\n";
+        createChannels(3);
+        return;
+    }
+
+    std::cerr << "unknown product id, cannot create channels\n";
+}
+
+void Device::createChannels(unsigned int num_channels) {
+    for (unsigned char i = 0; i < num_channels; i++) {
+        channels.push_back(new Channel(this, i));
+    }
 }
 
 void Device::writePacket(Packet* packet) {
