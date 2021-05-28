@@ -25,7 +25,7 @@ void Registry::loadDeviceFromConfig(std::map<std::string, std::string> config) {
         std::cerr << "unable to load device: driver not specified\n";
         return;
     }
-    if (config.find(config["driver"]) == config.end()) {
+    if (drivers.find(config["driver"]) == drivers.end()) {
         std::cerr << "unable to load device: driver \"" << config["driver"] << "\" not available\n";
         return;
     }

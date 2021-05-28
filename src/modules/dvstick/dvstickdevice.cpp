@@ -278,7 +278,7 @@ QueueWorker::~QueueWorker() {
 void QueueWorker::run() {
     size_t in_progress = 0;
     while (dorun) {
-        while ((!queue->empty() && in_progress < DV3K_FIFO_MAX_PENDING) || in_progress == 0) {
+        while ((!queue->empty() && in_progress < AMBE3K_FIFO_MAX_PENDING) || in_progress == 0) {
             Packet* packet = queue->pop();
             packet->writeTo(device->fd);
             delete packet;

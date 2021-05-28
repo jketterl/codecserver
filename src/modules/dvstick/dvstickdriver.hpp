@@ -8,7 +8,6 @@ namespace DvStick {
     class Driver: public CodecServer::Driver {
         public:
             std::string getIdentifier() override;
-            std::vector<CodecServer::Device*> scanForDevices() override;
             Device* buildFromConfiguration(std::map<std::string, std::string> config) override;
     };
 

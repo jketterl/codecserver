@@ -36,6 +36,7 @@ int Server::main(int argc, char** argv) {
     Scanner scanner;
     scanner.scanModules();
 
+    std::cout << "loading devices from configuration...\n";
     for (std::string device: config.getDevices()) {
         std::map<std::string, std::string> args = config.getDeviceConfig(device);
         Registry::get()->loadDeviceFromConfig(args);

@@ -12,7 +12,7 @@ Packet::Packet(char* newData, size_t size) {
     dataSize = size;
 
     // start byte is constant
-    data[0] = DV3K_START_BYTE;
+    data[0] = AMBE3K_START_BYTE;
 
     // need to fix endianness
     *(short*)(&data[1]) = htons(dataSize - 4);
@@ -24,32 +24,32 @@ Packet* Packet::parse(char* data, size_t size) {
         return nullptr;
     }
     char type = p->getType();
-    if (type == DV3K_TYPE_CONTROL) {
+    if (type == AMBE3K_TYPE_CONTROL) {
         char opCode = p->payload[0];
         if (opCode >= 0x40 && opCode <= 0x42) {
             // response is for a specific channel... move forward
             opCode = p->payload[2];
         }
         switch(opCode) {
-            case DV3K_CONTROL_READY:
+            case AMBE3K_CONTROL_READY:
                 delete p;
                 return new ReadyPacket(data, size);
-            case DV3K_CONTROL_PRODID:
+            case AMBE3K_CONTROL_PRODID:
                 delete p;
                 return new ProdIdResponse(data, size);
-            case DV3K_CONTROL_VERSTRING:
+            case AMBE3K_CONTROL_VERSTRING:
                 delete p;
                 return new VersionStringResponse(data, size);
-            case DV3K_CONTROL_RATET:
+            case AMBE3K_CONTROL_RATET:
                 delete p;
                 return new RateTResponse(data, size);
-            case DV3K_CONTROL_RATEP:
+            case AMBE3K_CONTROL_RATEP:
                 delete p;
                 return new RatePResponse(data, size);
             default:
                 std::cerr << "unexpected opcode: " << std::hex << +opCode << "\n";
         }
-    } else if (type == DV3K_TYPE_AUDIO) {
+    } else if (type == AMBE3K_TYPE_AUDIO) {
         delete p;
         return new SpeechPacket(data, size);
     }
@@ -73,7 +73,7 @@ char Packet::getChecksum() {
 }
 
 void Packet::updateChecksum() {
-    data[dataSize - 2] = DV3K_PARITY_BYTE;
+    data[dataSize - 2] = AMBE3K_PARITY_BYTE;
     data[dataSize - 1] = getChecksum();
 }
 
@@ -96,7 +96,7 @@ Packet* Packet::receiveFrom(int fd) {
         }
     }
 
-    if (remain > 0 || buf[0] != DV3K_START_BYTE) {
+    if (remain > 0 || buf[0] != AMBE3K_START_BYTE) {
         return nullptr;
     }
 
@@ -119,15 +119,15 @@ size_t Packet::getPayloadLength() {
 }
 
 ControlPacket::ControlPacket(size_t bytes): Packet(bytes) {
-    setType(DV3K_TYPE_CONTROL);
+    setType(AMBE3K_TYPE_CONTROL);
 }
 
 ResetPacket::ResetPacket(): ControlPacket(7) {
-    payload[0] = DV3K_CONTROL_RESET;
+    payload[0] = AMBE3K_CONTROL_RESET;
 }
 
 ProdIdRequest::ProdIdRequest(): ControlPacket(7) {
-    payload[0] = DV3K_CONTROL_PRODID;
+    payload[0] = AMBE3K_CONTROL_PRODID;
 }
 
 std::string ProdIdResponse::getProductId() {
@@ -135,7 +135,7 @@ std::string ProdIdResponse::getProductId() {
 }
 
 VersionStringRequest::VersionStringRequest(): ControlPacket(7) {
-    payload[0] = DV3K_CONTROL_VERSTRING;
+    payload[0] = AMBE3K_CONTROL_VERSTRING;
 }
 
 std::string VersionStringResponse::getVersionString() {
@@ -145,22 +145,22 @@ std::string VersionStringResponse::getVersionString() {
 SetupRequest::SetupRequest(unsigned char channel, unsigned char index, unsigned char direction): ControlPacket(11) {
     assert(channel <= 3);
     payload[0] = 0x40 + channel;
-    payload[1] = DV3K_CONTROL_RATET;
+    payload[1] = AMBE3K_CONTROL_RATET;
     payload[2] = index;
     // string in the init, too
-    payload[3] = DV3K_CONTROL_INIT;
+    payload[3] = AMBE3K_CONTROL_INIT;
     payload[4] = direction;
 }
 
 SetupRequest::SetupRequest(unsigned char channel, short* cwds, unsigned char direction): ControlPacket(22) {
     assert(channel <= 3);
     payload[0] = 0x40 + channel;
-    payload[1] = DV3K_CONTROL_RATEP;
+    payload[1] = AMBE3K_CONTROL_RATEP;
     short* output = (short*)(payload + 2);
     for (int i = 0; i < 6; i++) {
         output[i] = htons(cwds[i]);
     }
-    payload[14] = DV3K_CONTROL_INIT;
+    payload[14] = AMBE3K_CONTROL_INIT;
     payload[15] = direction;
 }
 
@@ -182,7 +182,7 @@ char RatePResponse::getResult() {
 }
 
 ChannelPacket::ChannelPacket(unsigned char channel, char* channelData, unsigned char bits): Packet(((int) (bits + 7) / 8) + 9) {
-    setType(DV3K_TYPE_AMBE);
+    setType(AMBE3K_TYPE_AMBE);
     // channel to be used
     payload[0] = 0x40 + channel;
     // CHAND

@@ -42,10 +42,10 @@ void DvStickSession::renegotiate(CodecServer::proto::Settings settings) {
     unsigned char direction = 0;
     for (int dir: settings.directions()) {
         if (dir == Settings_Direction_ENCODE) {
-            direction |= DV3K_DIRECTION_ENCODE;
+            direction |= AMBE3K_DIRECTION_ENCODE;
             std::cout << " enccode";
         } else if (dir == Settings_Direction_DECODE) {
-            direction |= DV3K_DIRECTION_DECODE;
+            direction |= AMBE3K_DIRECTION_DECODE;
             std::cout << " decode";
         }
     }
