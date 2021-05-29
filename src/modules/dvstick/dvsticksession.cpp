@@ -9,8 +9,12 @@ DvStickSession::DvStickSession(Channel* channel) {
     this->channel = channel;
 }
 
-void DvStickSession::process(char* input, size_t size) {
-    channel->process(input, size);
+void DvStickSession::encode(char* input, size_t size) {
+    channel->encode(input, size);
+}
+
+void DvStickSession::decode(char* input, size_t size) {
+    channel->decode(input, size);
 }
 
 size_t DvStickSession::read(char* output) {

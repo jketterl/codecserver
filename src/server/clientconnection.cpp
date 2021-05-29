@@ -81,7 +81,13 @@ void ClientConnection::loop() {
             ChannelData* data = new ChannelData();
             message->UnpackTo(data);
             std::string input = data->data();
-            session->process((char*) input.c_str(), input.length());
+            session->decode((char*) input.c_str(), input.length());
+            delete data;
+        } else if (message->Is<SpeechData>()) {
+            SpeechData* data = new SpeechData();
+            message->UnpackTo(data);
+            std::string input = data->data();
+            session->encode((char*) input.c_str(), input.length());
             delete data;
         } else if (message->Is<Renegotiation>()) {
             Renegotiation* reneg = new Renegotiation();
@@ -101,8 +107,6 @@ void ClientConnection::loop() {
         }
 
         delete message;
-
-        // TODO SpeechData
     }
 
 
@@ -119,6 +123,7 @@ void ClientConnection::read() {
             run = false;
             break;
         }
+        // TODO: we don't know if it's actually speech data, typing is list in Session::read()
         SpeechData* data = new SpeechData();
         data->set_data(std::string(output, size));
         sendMessage(data);

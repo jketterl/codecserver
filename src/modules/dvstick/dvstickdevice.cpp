@@ -260,8 +260,12 @@ unsigned char Channel::getFramingBits() {
     return 0;
 }
 
-void Channel::process(char* input, size_t size) {
+void Channel::decode(char* input, size_t size) {
     device->writePacket(new ChannelPacket(index, input, getFramingBits()));
+}
+
+void Channel::encode(char* input, size_t size) {
+    device->writePacket(new SpeechPacket(index, input, size / 2));
 }
 
 void Channel::receive(SpeechPacket* packet) {
@@ -281,14 +285,49 @@ void Channel::receive(SpeechPacket* packet) {
     }
 }
 
-size_t Channel::read(char* output) {
-    SpeechPacket* packet = queue->pop();
-    if (packet == nullptr) {
-        return 0;
+void Channel::receive(ChannelPacket* packet) {
+    // TODO lock to make sure that queue doesn't go away after...
+    if (queue == nullptr) {
+        delete packet;
+        std::cerr << "received packet while channel is not active. recent shutdown?\n";
+        return;
     }
-    size_t size = packet->getSpeechData(output);
-    delete packet;
-    return size;
+    try {
+        queue->push(packet, false);
+    } catch (QueueFullException) {
+        std::cerr << "channel queue full. shutting down queue...\n";
+        delete packet;
+        delete queue;
+        queue = nullptr;
+    }
+}
+
+size_t Channel::read(char* output) {
+    while (true) {
+        Packet* packet = queue->pop();
+        if (packet == nullptr) {
+            return 0;
+        }
+
+        // TODO: this loses the typing. callers of read() will not know if the response is channel or speech data.
+
+        SpeechPacket* speech = dynamic_cast<SpeechPacket*>(packet);
+        if (speech != nullptr) {
+            size_t size = speech->getSpeechData(output);
+            delete speech;
+            return size;
+        }
+
+        ChannelPacket* channel = dynamic_cast<ChannelPacket*>(packet);
+        if (channel != nullptr) {
+            size_t size = channel->getChannelData(output);
+            delete channel;
+            return size;
+        }
+
+        std::cerr << "dropping one unexpected packet from channel queue\n";
+        delete packet;
+    }
 }
 
 unsigned char Channel::getIndex() {
@@ -301,7 +340,7 @@ bool Channel::isBusy() {
 
 void Channel::reserve() {
     busy = true;
-    queue = new BlockingQueue<SpeechPacket*>(10);
+    queue = new BlockingQueue<Packet*>(10);
 }
 
 void Channel::release() {

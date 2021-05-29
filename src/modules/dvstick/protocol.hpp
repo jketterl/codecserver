@@ -115,12 +115,16 @@ namespace DvStick::Protocol {
 
     class ChannelPacket: public Packet {
         public:
+            ChannelPacket(char* data, size_t size): Packet(data, size) {}
             ChannelPacket(unsigned char channel, char* channelData, unsigned char bits);
+            size_t getChannelData(char* output);
+            unsigned char getChannel();
     };
 
     class SpeechPacket: public Packet {
         public:
             SpeechPacket(char* data, size_t size): Packet(data, size) {}
+            SpeechPacket(unsigned char channel, char* speechData, unsigned char samples);
             size_t getSpeechData(char* output);
             unsigned char getChannel();
     };

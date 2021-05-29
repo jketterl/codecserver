@@ -13,7 +13,8 @@ namespace DvStick {
     class DvStickSession: public CodecServer::Session {
         public:
             DvStickSession(Channel* channel);
-            void process(char* input, size_t size) override;
+            void encode(char* input, size_t size) override;
+            void decode(char* input, size_t size) override;
             size_t read(char* output) override;
             void end() override;
             FramingHint* getFraming() override;

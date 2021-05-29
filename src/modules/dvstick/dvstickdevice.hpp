@@ -37,8 +37,10 @@ namespace DvStick {
         public:
             Channel(Device* device, unsigned char index);
             ~Channel();
-            void process(char* input, size_t size);
+            void encode(char* input, size_t size);
+            void decode(char* input, size_t size);
             void receive(DvStick::Protocol::SpeechPacket* speech);
+            void receive(DvStick::Protocol::ChannelPacket* channel);
             size_t read(char* output);
             unsigned char getIndex();
             bool isBusy();
@@ -53,7 +55,7 @@ namespace DvStick {
             Device* device;
             unsigned char index;
             unsigned char codecIndex;
-            BlockingQueue<DvStick::Protocol::SpeechPacket*>* queue;
+            BlockingQueue<DvStick::Protocol::Packet*>* queue;
     };
 
     class QueueWorker {

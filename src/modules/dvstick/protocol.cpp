@@ -52,6 +52,9 @@ Packet* Packet::parse(char* data, size_t size) {
     } else if (type == AMBE3K_TYPE_AUDIO) {
         delete p;
         return new SpeechPacket(data, size);
+    } else if (type == AMBE3K_TYPE_AMBE) {
+        delete p;
+        return new ChannelPacket(data, size);
     }
     return p;
 }
@@ -181,7 +184,7 @@ char RatePResponse::getResult() {
     return payload[3];
 }
 
-ChannelPacket::ChannelPacket(unsigned char channel, char* channelData, unsigned char bits): Packet(((int) (bits + 7) / 8) + 9) {
+ChannelPacket::ChannelPacket(unsigned char channel, char* channelData, unsigned char bits): Packet((int) ((bits + 7) / 8) + 9) {
     setType(AMBE3K_TYPE_AMBE);
     // channel to be used
     payload[0] = 0x40 + channel;
@@ -190,6 +193,17 @@ ChannelPacket::ChannelPacket(unsigned char channel, char* channelData, unsigned 
     // number of bits
     payload[2] = bits;
     memcpy(payload + 3, channelData, (int) ((bits + 7) / 8));
+}
+
+SpeechPacket::SpeechPacket(unsigned char channel, char* speechData, unsigned char samples): Packet(samples * 2 + 9) {
+    setType(AMBE3K_TYPE_AUDIO);
+    // channel to be used
+    payload[0] = 0x40 + channel;
+    // SPEECHD
+    payload[1] = 0x00;
+    // number ov samples
+    payload[2] = samples;
+    memcpy(payload + 3, speechData, samples * 2);
 }
 
 size_t SpeechPacket::getSpeechData(char* output) {
@@ -214,5 +228,27 @@ size_t SpeechPacket::getSpeechData(char* output) {
 }
 
 unsigned char SpeechPacket::getChannel() {
+    return payload[0] - 0x40;
+}
+
+size_t ChannelPacket::getChannelData(char* output) {
+    // skip channel packets
+    char* pos = payload + 1;
+    size_t len = 0;
+    while (pos < payload + getPayloadLength()) {
+        if (pos[0] == 0x01) {
+            len = (int) ((((unsigned char) pos[1]) + 7) / 8);
+            pos += 2;
+            memcpy(output, pos, len);
+            pos += len;
+        } else {
+            std::cerr << "unexpected field data: " << std::hex << +pos[0] << "\n";
+            pos += 1;
+        }
+    }
+    return len;
+}
+
+unsigned char ChannelPacket::getChannel() {
     return payload[0] - 0x40;
 }
