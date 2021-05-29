@@ -11,6 +11,6 @@ message Response {
   }
 
   Status result = 1;
-  optional string message = 2;
-  optional FramingHint framing = 3;
+  string message = 2;
+  FramingHint framing = 3;
 }
