@@ -1,0 +1,12 @@
+[Unit]
+Description=CodecServer
+
+[Service]
+Type=simple
+User=codecserver
+Group=codecserver
+ExecStart=/usr/bin/codecserver
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
