@@ -42,11 +42,20 @@ int Server::main(int argc, char** argv) {
 
     for (std::string type: config.getServers()) {
         std::map<std::string, std::string> args = config.getServerConfig(type);
+        SocketServer* server = nullptr;
         if (type == "unixdomainsockets") {
-            UnixDomainSocketServer* server = new UnixDomainSocketServer(args);
-            servers.push_back(server);
-        } else if (type == "tcp") {
-            TcpServer* server = new TcpServer(args);
+            server = new UnixDomainSocketServer();
+        } else if (type == "tcp4") {
+            server = new Tcp4Server();
+        } else if (type == "tcp" or type == "tcp6") {
+            server = new Tcp6Server();
+        }
+
+        if (server == nullptr) {
+            std::cerr << "unknown server type: \"" << type << "\"\n";
+        } else {
+            server->readConfig(args);
+            server->setupSocket();
             servers.push_back(server);
         }
     }
