@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cstring>
 #include <sys/un.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 using namespace CodecServer;
@@ -17,7 +18,14 @@ int UnixDomainSocketServer::bind() {
     memset(&addr, 0, sizeof(addr));
     addr.sun_family = AF_UNIX;
     strncpy(addr.sun_path, socket_path.c_str(), socket_path.length());
-    return ::bind(sock, (sockaddr*) &addr, sizeof(addr));
+    int rc = ::bind(sock, (sockaddr*) &addr, sizeof(addr));
+
+    // change permissions so that others can use the socket, too
+    if (chmod(socket_path.c_str(), S_IRWXU | S_IRWXG | S_IRWXO) == -1) {
+        std::cerr << "error setting socket permissions: " << strerror(errno) << "\n";
+    };
+
+    return rc;
 }
 
 int UnixDomainSocketServer::getSocket() {
