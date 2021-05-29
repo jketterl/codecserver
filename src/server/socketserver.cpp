@@ -21,8 +21,13 @@ void SocketServer::setupSocket() {
         return;
     }
 
-    if (bind() == -1) {
-        std::cerr << "bind error: " << strerror(errno) << "\n";
+    int rc = bind();
+    if (rc < 0) {
+        if (rc == -1) {
+            std::cerr << "bind error: " << strerror(errno) << "\n";
+        } else {
+            std::cerr << "bind error: unknown\n";
+        }
         return;
     }
 
