@@ -30,7 +30,7 @@
 
 #define AMBE3K_FIFO_MAX_PENDING 3
 
-namespace DvStick::Protocol {
+namespace Ambe3K::Protocol {
 
     class Packet {
         public:

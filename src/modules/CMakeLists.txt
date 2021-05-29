@@ -1,1 +1,1 @@
-add_subdirectory(dvstick)
+add_subdirectory(ambe3k)

@@ -48,5 +48,5 @@ BlockingQueue<T>::~BlockingQueue<T>() {
     isFull.notify_all();
 }
 
-template class BlockingQueue<DvStick::Protocol::Packet*>;
-template class BlockingQueue<DvStick::Protocol::SpeechPacket*>;
+template class BlockingQueue<Ambe3K::Protocol::Packet*>;
+template class BlockingQueue<Ambe3K::Protocol::SpeechPacket*>;

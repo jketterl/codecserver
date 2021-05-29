@@ -2,7 +2,7 @@
 #include <cassert>
 #include <iostream>
 
-using namespace DvStick::Protocol;
+using namespace Ambe3K::Protocol;
 
 Packet::Packet(char* newData, size_t size) {
     // minimum size with parity

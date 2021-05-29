@@ -1,9 +1,10 @@
 #pragma once
 
+#include "device.hpp"
 #include "driver.hpp"
-#include "dvstickdevice.hpp"
+#include "ambe3kdevice.hpp"
 
-namespace DvStick {
+namespace Ambe3K {
 
     class Driver: public CodecServer::Driver {
         public:

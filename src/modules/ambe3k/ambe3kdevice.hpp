@@ -6,7 +6,7 @@
 #include "request.pb.h"
 #include <termios.h>
 
-namespace DvStick {
+namespace Ambe3K {
 
     class Channel;
 
@@ -18,8 +18,8 @@ namespace DvStick {
             ~Device();
             std::vector<std::string> getCodecs() override;
             CodecServer::Session* startSession(CodecServer::proto::Request* request) override;
-            void writePacket(DvStick::Protocol::Packet* packet);
-            void receivePacket(DvStick::Protocol::Packet* packet);
+            void writePacket(Ambe3K::Protocol::Packet* packet);
+            void receivePacket(Ambe3K::Protocol::Packet* packet);
             // TODO privatize
             int fd;
         private:
@@ -29,7 +29,7 @@ namespace DvStick {
             void createChannels(std::string prodId);
             void createChannels(unsigned int num);
             std::vector<Channel*> channels;
-            BlockingQueue<DvStick::Protocol::Packet*>* queue;
+            BlockingQueue<Ambe3K::Protocol::Packet*>* queue;
             QueueWorker* worker;
     };
 
@@ -39,8 +39,8 @@ namespace DvStick {
             ~Channel();
             void encode(char* input, size_t size);
             void decode(char* input, size_t size);
-            void receive(DvStick::Protocol::SpeechPacket* speech);
-            void receive(DvStick::Protocol::ChannelPacket* channel);
+            void receive(Ambe3K::Protocol::SpeechPacket* speech);
+            void receive(Ambe3K::Protocol::ChannelPacket* channel);
             size_t read(char* output);
             unsigned char getIndex();
             bool isBusy();
@@ -55,17 +55,17 @@ namespace DvStick {
             Device* device;
             unsigned char index;
             unsigned char codecIndex;
-            BlockingQueue<DvStick::Protocol::Packet*>* queue;
+            BlockingQueue<Ambe3K::Protocol::Packet*>* queue;
     };
 
     class QueueWorker {
         public:
-            QueueWorker(Device* device, BlockingQueue<DvStick::Protocol::Packet*>* queue);
+            QueueWorker(Device* device, BlockingQueue<Ambe3K::Protocol::Packet*>* queue);
             ~QueueWorker();
         private:
             void run();
             Device* device;
-            BlockingQueue<DvStick::Protocol::Packet*>* queue;
+            BlockingQueue<Ambe3K::Protocol::Packet*>* queue;
             bool dorun = true;
     };
 

@@ -1,31 +1,31 @@
-#include "dvsticksession.hpp"
+#include "ambe3ksession.hpp"
 #include <cstring>
 #include <iostream>
 #include <sstream>
 
-using namespace DvStick;
+using namespace Ambe3K;
 
-DvStickSession::DvStickSession(Channel* channel) {
+Ambe3KSession::Ambe3KSession(Channel* channel) {
     this->channel = channel;
 }
 
-void DvStickSession::encode(char* input, size_t size) {
+void Ambe3KSession::encode(char* input, size_t size) {
     channel->encode(input, size);
 }
 
-void DvStickSession::decode(char* input, size_t size) {
+void Ambe3KSession::decode(char* input, size_t size) {
     channel->decode(input, size);
 }
 
-size_t DvStickSession::read(char* output) {
+size_t Ambe3KSession::read(char* output) {
     return channel->read(output);
 }
 
-void DvStickSession::end() {
+void Ambe3KSession::end() {
     channel->release();
 }
 
-CodecServer::proto::FramingHint* DvStickSession::getFraming() {
+CodecServer::proto::FramingHint* Ambe3KSession::getFraming() {
     unsigned char bits = channel->getFramingBits();
     if (bits == 0) {
         return nullptr;
@@ -39,7 +39,7 @@ CodecServer::proto::FramingHint* DvStickSession::getFraming() {
     return framing;
 }
 
-void DvStickSession::renegotiate(CodecServer::proto::Settings settings) {
+void Ambe3KSession::renegotiate(CodecServer::proto::Settings settings) {
     std::cout << "renegotiating: direction:";
     std::map<std::string, std::string> args(settings.args().begin(), settings.args().end());
 
@@ -76,7 +76,7 @@ void DvStickSession::renegotiate(CodecServer::proto::Settings settings) {
     }
 }
 
-short* DvStickSession::parseRatePString(std::string input) {
+short* Ambe3KSession::parseRatePString(std::string input) {
     if (input.length() != 29) return nullptr;
     std::vector<std::string> parts;
     size_t pos_start = 0, pos_end;

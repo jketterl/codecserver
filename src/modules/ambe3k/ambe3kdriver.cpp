@@ -1,7 +1,7 @@
-#include "dvstickdriver.hpp"
+#include "ambe3kdriver.hpp"
 #include "registry.hpp"
 
-using namespace DvStick;
+using namespace Ambe3K;
 
 std::string Driver::getIdentifier(){
     return "ambe3k";

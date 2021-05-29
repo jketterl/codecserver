@@ -1,18 +1,18 @@
-#include "device.hpp"
+#include "ambe3kdevice.hpp"
 #include "registry.hpp"
-#include "dvsticksession.hpp"
+#include "ambe3ksession.hpp"
 #include <iostream>
 #include <cstring>
 #include <fcntl.h>
 #include <thread>
 #include <stdexcept>
 
-namespace DvStick {
+namespace Ambe3K {
 
 using namespace Protocol;
 
 Device::Device(std::string tty, unsigned int baudRate) {
-    queue = new BlockingQueue<DvStick::Protocol::Packet*>(10);
+    queue = new BlockingQueue<Ambe3K::Protocol::Packet*>(10);
     worker = new QueueWorker(this, queue);
     open(tty, baudRate);
     init();
@@ -36,7 +36,7 @@ CodecServer::Session* Device::startSession(CodecServer::proto::Request* request)
         if (!channel->isBusy()) {
             std::cerr << "starting new session on channel " << +channel->getIndex() << "\n";
             channel->reserve();
-            DvStickSession* session = new DvStickSession(channel);
+            Ambe3KSession* session = new Ambe3KSession(channel);
             try {
                 session->renegotiate(request->settings());
                 return session;
