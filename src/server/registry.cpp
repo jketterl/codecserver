@@ -8,7 +8,12 @@ int Registry::registerDriver(Driver* driver) {
 }
 
 int Registry::_registerDriver(Driver* driver) {
-    std::cout << "registering new driver: " << driver->getIdentifier() << "\n";
+    if (drivers.find(driver->getIdentifier()) != drivers.end()) {
+        std::cerr << "failed to register driver \"" << driver->getIdentifier() << "\": already registered!\n";
+        return -1;
+    }
+
+    std::cout << "registering new driver: \"" << driver->getIdentifier() << "\"\n";
     drivers[driver->getIdentifier()] = driver;
 
     std::cout << "scanning for \"" << driver->getIdentifier() << "\" devices...\n";
