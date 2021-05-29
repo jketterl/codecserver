@@ -1,0 +1,12 @@
+[Unit]
+Description=CodecServer
+
+[Service]
+Type=simple
+User=codecserver
+Group=codecserver
+ExecStart=@CMAKE_INSTALL_FULL_BINDIR@/codecserver
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

@@ -6,3 +6,11 @@ target_compile_definitions(codecserver-bin PRIVATE
 )
 target_link_libraries(codecserver-bin codecserver dl ${CMAKE_THREAD_LIBS_INIT})
 install(TARGETS codecserver-bin DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+configure_file(codecserver.service.in codecserver.service @ONLY)
+if (CMAKE_INSTALL_PREFIX STREQUAL "/usr")
+    set(SYSTEMD_PREFIX "/lib/systemd/system")
+else()
+    set(SYSTEMD_PREFIX "${CMAKE_INSTALL_LIBDIR}/systemd/system")
+endif()
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/codecserver.service DESTINATION ${SYSTEMD_PREFIX})
