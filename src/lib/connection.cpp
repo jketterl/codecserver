@@ -24,8 +24,8 @@ void Connection::sendMessage(google::protobuf::Message* message) {
     any->PackFrom(*message);
     FileOutputStream* fos = new FileOutputStream(sock);
     CodedOutputStream* os = new CodedOutputStream(fos);
-    unsigned int size = any->ByteSizeLong();
-    os->WriteVarint32(size);
+    uint64_t size = any->ByteSizeLong();
+    os->WriteVarint64(size);
     any->SerializeToCodedStream(os);
     delete any;
     delete os;
@@ -34,8 +34,8 @@ void Connection::sendMessage(google::protobuf::Message* message) {
 
 google::protobuf::Any* Connection::receiveMessage() {
     CodedInputStream* is = new CodedInputStream(inStream);
-    unsigned int size;
-    is->ReadVarint32(&size);
+    uint64_t size;
+    is->ReadVarint64(&size);
     if (size == 0) {
         return nullptr;
     }
