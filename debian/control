@@ -1,0 +1,39 @@
+Source: codecserver
+Maintainer: Jakob Ketterl <jakob.ketterl@gmx.de>
+Section: hamradio
+Priority: optional
+Standards-Version: 4.2.0
+Build-Depends: debhelper (>= 11), cmake (>= 3), libprotobuf-dev (>= 3), protobuf-compiler (>= 3)
+Vcs-Browser: https://github.com/jketterl/codecserver
+Vcs-Git: https://github.com/jketterl/codecserver.git
+
+Package: libcodecserver
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Codecserver base library
+ Contains basic connection and messaging functionality
+
+Package: libcodecserver-dev
+Architecture: any
+Depends: libcodecserver (=${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Description: Codecserver base library - development files
+ Provides includes and protobuf templates to facilitate codecserver integration
+
+Package: codecserver
+Architecture: any
+Depends: libcodecserver (=${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Description: Codecserver modular codec dispatching system
+ Provides a modular server that can take over audio encoding and decoding over
+ the network
+
+Package: codecserver-driver-ambe3k
+Architecture: any
+Depends: libcodecserver (=${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Description: Codecserver driver for AMBE-3000 devices
+ Adds support for AMBE-3000 devices over serial to Codecserver
+
+Package: codecserver-driver-all
+Architecture: any
+Depends: codecserver-driver-ambe3k (=${binary:Version}), ${misc:Depends}
+Description: Virtual codecserver driver bundle
+ This package installs all available codecserver drivers
