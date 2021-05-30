@@ -261,7 +261,7 @@ unsigned char Channel::getFramingBits() {
 }
 
 void Channel::decode(char* input, size_t size) {
-    device->writePacket(new ChannelPacket(index, input, getFramingBits()));
+    device->writePacket(new ChannelPacket(index, input, size * 8));
 }
 
 void Channel::encode(char* input, size_t size) {
