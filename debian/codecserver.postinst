@@ -6,7 +6,7 @@ CODECSERVER_USER="codecserver"
 case "$1" in
   configure|reconfigure)
     adduser --system --group --no-create-home --home /nonexistent --quiet "${CODECSERVER_USER}"
-    usermod -aG dialout openwebrx
+    usermod -aG dialout "${CODECSERVER_USER}"
   ;;
   *)
     echo "postinst called with unknown argument '$1'" 1>&2
