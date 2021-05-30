@@ -22,7 +22,7 @@ Description: Codecserver base library - development files
 Package: codecserver
 Architecture: any
 Depends: libcodecserver (=${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
-Description: Codecserver modular codec dispatching system
+Description: Modular network codec dispatching system
  Provides a modular server that can take over audio encoding and decoding over
  the network
 
@@ -35,5 +35,5 @@ Description: Codecserver driver for AMBE-3000 devices
 Package: codecserver-driver-all
 Architecture: any
 Depends: codecserver-driver-ambe3k (=${binary:Version}), ${misc:Depends}
-Description: Virtual codecserver driver bundle
+Description: Virtual codecserver driver bundle dependency package
  This package installs all available codecserver drivers
