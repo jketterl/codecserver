@@ -1,0 +1,17 @@
+#!/bin/bash
+set -euo pipefail
+
+CODECSERVER_USER="codecserver"
+
+case "$1" in
+  configure|reconfigure)
+    adduser --system --group --no-create-home --home /nonexistent --quiet "${CODECSERVER_USER}"
+    usermod -aG dialout openwebrx
+  ;;
+  *)
+    echo "postinst called with unknown argument '$1'" 1>&2
+    exit 1
+  ;;
+esac
+
+#DEBHELPER#
