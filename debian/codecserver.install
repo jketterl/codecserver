@@ -1,3 +1,3 @@
 usr/bin/codecserver
-etc/systemd/system
+lib/systemd/system
 conf/codecserver.conf etc/codecserver
