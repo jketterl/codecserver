@@ -1,1 +1,1 @@
-usr/lib/libcodecserver.so.*
+usr/lib/*/libcodecserver.so.*
