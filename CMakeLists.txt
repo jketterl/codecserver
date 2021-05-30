@@ -9,7 +9,6 @@ add_definitions(-DVERSION="${PROJECT_VERSION}-dev")
 
 enable_language(CXX)
 set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_FLAGS "-rdynamic")
 
 include(GNUInstallDirs)
 include(FindProtobuf)
@@ -17,9 +16,9 @@ include(FindProtobuf)
 find_package(Threads REQUIRED)
 find_package(Protobuf REQUIRED)
 
-SET(CMAKE_CXX_FLAGS_DEBUG "-g -O3")
+SET(CMAKE_CXX_FLAGS_DEBUG "-g -O3 -rdynamic")
 SET(CMAKE_C_FLAGS_DEBUG "-g -O3")
-SET(CMAKE_CXX_FLAGS_RELEASE "-O3")
+SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -rdynamic")
 SET(CMAKE_C_FLAGS_RELEASE "-O3")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
