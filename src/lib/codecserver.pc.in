@@ -5,8 +5,9 @@ includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
 
 Name: @PROJECT_NAME@
 Description: @PROJECT_DESCRIPTION@
+URL: https://github.com/jketterl/owrx_connector
 Version: @PROJECT_VERSION@
 
-Requires:
-Libs: -L${libdir} -lcodecserver -lprotobuf
+Requires: protobuf
+Libs: -L${libdir} -lcodecserver
 Cflags: -I${includedir}
