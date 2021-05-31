@@ -15,7 +15,7 @@ namespace CodecServer {
             void loop();
             void read();
             bool run = true;
-            Session* session;
+            Session* session = nullptr;
     };
 
 }
