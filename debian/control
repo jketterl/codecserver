@@ -22,6 +22,7 @@ Description: Codecserver base library - development files
 Package: codecserver
 Architecture: any
 Depends: adduser, libcodecserver (=${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Recommends: codecserver-driver-all (=${binary:Version})
 Description: Modular network codec dispatching system
  Provides a modular server that can take over audio encoding and decoding over
  the network
