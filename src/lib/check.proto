@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package CodecServer.proto;
+
+message Check {
+  string codec = 1;
+}

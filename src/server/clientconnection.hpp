@@ -11,7 +11,7 @@ namespace CodecServer {
         public:
             ClientConnection(int sock);
         private:
-            void handshake();
+            bool handshake();
             void loop();
             void read();
             bool run = true;

@@ -3,6 +3,7 @@
 #include "request.pb.h"
 #include "response.pb.h"
 #include "data.pb.h"
+#include "check.pb.h"
 #include "registry.hpp"
 #include <iostream>
 #include <netinet/in.h>
@@ -15,15 +16,16 @@ using namespace CodecServer::proto;
 
 ClientConnection::ClientConnection(int sock): Connection(sock) {
     try {
-        handshake();
-        loop();
+        if (handshake()) {
+            loop();
+        }
     } catch (ConnectionException e) {
         std::cerr << "connection error: " << e.what() << "\n";
     }
     close();
 }
 
-void ClientConnection::handshake() {
+bool ClientConnection::handshake() {
     GOOGLE_PROTOBUF_VERIFY_VERSION;
     Handshake handshake;
     handshake.set_servername("codecserver");
@@ -36,33 +38,54 @@ void ClientConnection::handshake() {
         throw ConnectionException("connection closed before request");
     }
 
-    if (!message->Is<Request>()) {
-        throw ConnectionException("unexepected message type receive (expecting Request)");
-    }
-    Request request;
-    message->UnpackTo(&request);
-    std::cout << "client requests codec " << request.codec() << "\n";
-
-    for (Device* device: Registry::get()->findDevices(request.codec())) {
-        session = device->startSession(&request);
-        if (session != nullptr) break;
-    }
-
     Response response;
-    if (session == nullptr) {
-        response.set_result(Response_Status_ERROR);
-        response.set_message("no device available");
+
+    if (message->Is<Request>()) {
+        Request request;
+        message->UnpackTo(&request);
+        delete message;
+        std::cout << "client requests codec " << request.codec() << "\n";
+
+        for (Device* device: Registry::get()->findDevices(request.codec())) {
+            session = device->startSession(&request);
+            if (session != nullptr) break;
+        }
+
+        if (session == nullptr) {
+            response.set_result(Response_Status_ERROR);
+            response.set_message("no device available");
+            sendMessage(&response);
+            return false;
+        }
+        response.set_result(Response_Status_OK);
+        FramingHint* framing = session->getFraming();
+        if (framing != nullptr) {
+            response.set_allocated_framing(framing);
+        }
+
         sendMessage(&response);
-
-        throw ConnectionException("no device available");
+        return true;
     }
 
-    response.set_result(Response_Status_OK);
-    FramingHint* framing = session->getFraming();
-    if (framing != nullptr) {
-        response.set_allocated_framing(framing);
+    if (message->Is<Check>()) {
+        Check check;
+        message->UnpackTo(&check);
+        delete message;
+        std::cout << "check for codec: " << check.codec() << "\n";
+
+        if (!Registry::get()->findDevices(check.codec()).size()) {
+            response.set_result(Response_Status_ERROR);
+            response.set_message("no device available");
+        } else {
+            response.set_result(Response_Status_OK);
+        }
+
+        sendMessage(&response);
+        return false;
     }
-    sendMessage(&response);
+
+    delete message;
+    throw ConnectionException("unexepected message type receive (expecting Request or Check)");
 }
 
 void ClientConnection::loop() {
