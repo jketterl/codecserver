@@ -1,6 +1,6 @@
 #include "clientconnection.hpp"
-#include "handshake.pb.h"
-#include "response.pb.h"
+#include "proto/handshake.pb.h"
+#include "proto/response.pb.h"
 #include "registry.hpp"
 #include <iostream>
 #include <netinet/in.h>

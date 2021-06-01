@@ -3,7 +3,7 @@
 #include "device.hpp"
 #include "protocol.hpp"
 #include "blockingqueue.hpp"
-#include "request.pb.h"
+#include "proto/request.pb.h"
 #include <termios.h>
 
 namespace Ambe3K {

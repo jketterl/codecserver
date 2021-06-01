@@ -1,8 +1,8 @@
 #pragma once
 
 #include <unistd.h>
-#include "framing.pb.h"
-#include "request.pb.h"
+#include "proto/framing.pb.h"
+#include "proto/request.pb.h"
 
 using namespace CodecServer::proto;
 

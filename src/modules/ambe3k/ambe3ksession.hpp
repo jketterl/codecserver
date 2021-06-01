@@ -2,8 +2,8 @@
 
 #include "session.hpp"
 #include "ambe3kdevice.hpp"
-#include "framing.pb.h"
-#include "request.pb.h"
+#include "proto/framing.pb.h"
+#include "proto/request.pb.h"
 #include <unistd.h>
 
 using namespace CodecServer::proto;

@@ -1,5 +1,5 @@
 #include "connection.hpp"
-#include "data.pb.h"
+#include "proto/data.pb.h"
 #include <unistd.h>
 #include <netinet/in.h>
 #include <google/protobuf/io/coded_stream.h>

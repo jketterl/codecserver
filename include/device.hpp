@@ -1,6 +1,6 @@
 #pragma once
 
-#include "request.pb.h"
+#include "proto/request.pb.h"
 #include "session.hpp"
 #include <vector>
 #include <string>

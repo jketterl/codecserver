@@ -1,0 +1,9 @@
+file(GLOB CODECSERVER_PROTO_FILES "*.proto")
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${CODECSERVER_PROTO_FILES})
+
+add_library(codecserver_proto OBJECT ${PROTO_SRCS} ${CODECSERVER_PROTO_FILES})
+protobuf_generate(TARGET codecserver_proto)
+
+install(FILES ${CODECSERVER_PROTO_FILES} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/codecserver/proto)
+
+install(FILES ${PROTO_HDRS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/codecserver/proto)

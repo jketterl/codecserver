@@ -2,9 +2,9 @@
 
 #include "connection.hpp"
 #include "session.hpp"
-#include "data.pb.h"
-#include "request.pb.h"
-#include "check.pb.h"
+#include "proto/data.pb.h"
+#include "proto/request.pb.h"
+#include "proto/check.pb.h"
 #include <thread>
 #include <google/protobuf/message.h>
 #include <google/protobuf/any.pb.h>
