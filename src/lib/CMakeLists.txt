@@ -3,7 +3,7 @@ file(GLOB CODECSERVER_PROTO_FILES "*.proto")
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${CODECSERVER_PROTO_FILES})
 set(codecserver_proto_includes ${CMAKE_CURRENT_BINARY_DIR})
 
-add_library(codecserver SHARED connection.cpp config.cpp registry.cpp ${CODECSERVER_PROTO_FILES})
+add_library(codecserver SHARED connection.cpp config.cpp registry.cpp device.cpp ${CODECSERVER_PROTO_FILES})
 protobuf_generate(TARGET codecserver)
 target_link_libraries(codecserver ${Protobuf_LIBRARIES})
 set_target_properties(codecserver PROPERTIES VERSION ${PROJECT_VERSION})

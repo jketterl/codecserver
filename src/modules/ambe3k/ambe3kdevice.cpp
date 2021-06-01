@@ -11,6 +11,8 @@ namespace Ambe3K {
 
 using namespace Protocol;
 
+using CodecServer::DeviceException;
+
 Device::Device(std::string tty, unsigned int baudRate) {
     queue = new BlockingQueue<Ambe3K::Protocol::Packet*>(10);
     worker = new QueueWorker(this, queue);
@@ -56,24 +58,20 @@ void Device::open(std::string ttyname, unsigned int baudRate) {
 
     fd = ::open(ttyname.c_str(), O_RDWR | O_NOCTTY /*| O_SYNC*/);
     if (fd < 0) {
-        std::cerr << "could not open TTY: " << strerror(errno) << "\n";
-        return;
+        throw DeviceException("could not open TTY", errno);
     }
 
     struct termios tty;
     if (tcgetattr(fd, &tty) != 0) {
-        std::cerr << "tcgetattr error: " << strerror(errno) << "\n";
-        return;
+        throw DeviceException("tcgetattr error", errno);
     }
 
     if (cfsetispeed(&tty, 0) != 0) {
-        std::cerr << "cfsetispeed error: " << strerror(errno) << "\n";
-        return;
+        throw DeviceException("cfsetispeed error", errno);
     }
 
     if (cfsetospeed(&tty, baud) != 0) {
-        std::cerr << "cfsetospeed error: " << strerror(errno) << "\n";
-        return;
+        throw DeviceException("cfsetospeed error", errno);
     }
 
     tty.c_lflag &= ~(ECHO | ECHOE | ICANON | IEXTEN | ISIG );
@@ -85,8 +83,7 @@ void Device::open(std::string ttyname, unsigned int baudRate) {
     tty.c_cc[VTIME] = 10;
 
     if (tcsetattr(fd, TCSANOW, &tty) != 0) {
-        std::cerr << "tcsetattr error: " << strerror(errno) << "\n";
-        return;
+        throw DeviceException("tcsetattr error", errno);
     }
 }
 
@@ -139,15 +136,13 @@ void Device::init() {
 
     Packet* response = Packet::receiveFrom(fd);
     if (response == nullptr) {
-        std::cerr << "no response\n";
-        return;
+        throw DeviceException("device did not respond to reset");
     }
 
     ReadyPacket* ready = dynamic_cast<ReadyPacket*>(response);
     if (ready == nullptr) {
         delete response;
-        std::cerr << "unexpected response from stick\n";
-        return;
+        throw DeviceException("unexpected response from stick");
     }
     delete ready;
 
@@ -156,15 +151,13 @@ void Device::init() {
 
     response = Packet::receiveFrom(fd);
     if (response == nullptr) {
-        std::cerr << "no response\n";
-        return;
+        throw DeviceException("device did not respond to product id request");
     }
 
     ProdIdResponse* prodid = dynamic_cast<ProdIdResponse*>(response);
     if (prodid == nullptr) {
         delete response;
-        std::cerr << "unexpected response from stick\n";
-        return;
+        throw DeviceException("unexpected response from stick");
     }
 
     VersionStringRequest versionStringRequest;
@@ -172,15 +165,13 @@ void Device::init() {
 
     response = Packet::receiveFrom(fd);
     if (response == nullptr) {
-        std::cerr << "no response\n";
-        return;
+        throw DeviceException("device did not respond to version string request");
     }
 
     VersionStringResponse* versionString = dynamic_cast<VersionStringResponse*>(response);
     if (versionString == nullptr) {
         delete response;
-        std::cerr << "unexpected response from stick\n";
-        return;
+        throw DeviceException("unexpected response from stick");
     }
 
     std::cerr << "Product id: " << prodid->getProductId() << "; Version: " << versionString->getVersionString() << "\n";

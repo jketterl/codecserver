@@ -35,9 +35,13 @@ void Registry::loadDeviceFromConfig(std::map<std::string, std::string> config) {
         return;
     }
     Driver* driver = drivers[config["driver"]];
-    Device* device = driver->buildFromConfiguration(config);
-    if (device != nullptr) {
-        registerDevice(device);
+    try {
+        Device* device = driver->buildFromConfiguration(config);
+        if (device != nullptr) {
+            registerDevice(device);
+        }
+    } catch (const DeviceException e) {
+        std::cerr << "unable to create device: " << e.what() << "\n";
     }
 }
 
