@@ -20,14 +20,14 @@ namespace Ambe3K {
             CodecServer::Session* startSession(CodecServer::proto::Request* request) override;
             void writePacket(Ambe3K::Protocol::Packet* packet);
             void receivePacket(Ambe3K::Protocol::Packet* packet);
-            // TODO privatize
-            int fd;
+            void onQueueError(std::string message);
         private:
             void open(std::string tty, unsigned int baudRate);
             speed_t convertBaudrate(unsigned int baudRate);
             void init();
             void createChannels(std::string prodId);
             void createChannels(unsigned int num);
+            int fd;
             std::vector<Channel*> channels;
             BlockingQueue<Ambe3K::Protocol::Packet*>* queue;
             QueueWorker* worker;
@@ -60,10 +60,10 @@ namespace Ambe3K {
 
     class QueueWorker {
         public:
-            QueueWorker(Device* device, BlockingQueue<Ambe3K::Protocol::Packet*>* queue);
+            QueueWorker(Device* device, int fd, BlockingQueue<Ambe3K::Protocol::Packet*>* queue);
             ~QueueWorker();
         private:
-            void run();
+            void run(int fd);
             Device* device;
             BlockingQueue<Ambe3K::Protocol::Packet*>* queue;
             bool dorun = true;

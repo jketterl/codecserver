@@ -1,5 +1,6 @@
 #include "registry.hpp"
 #include <iostream>
+#include <algorithm>
 
 using namespace CodecServer;
 
@@ -53,6 +54,16 @@ void Registry::registerDevice(Device* device) {
         devices[codec].push_back(device);
     }
     std::cout << "\n";
+}
+
+void Registry::unregisterDevice(Device* device) {
+    std::cout << "unregistering device\n";
+    for (auto entry: devices) {
+        auto pos = std::find(entry.second.begin(), entry.second.end(), device);
+        if (pos != entry.second.end()) {
+            entry.second.erase(pos);
+        }
+    }
 }
 
 std::vector<Device*> Registry::findDevices(std::string identifier) {
