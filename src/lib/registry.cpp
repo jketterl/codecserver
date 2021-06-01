@@ -17,13 +17,18 @@ int Registry::_registerDriver(Driver* driver) {
     std::cout << "registering new driver: \"" << driver->getIdentifier() << "\"\n";
     drivers[driver->getIdentifier()] = driver;
 
-    std::cout << "scanning for \"" << driver->getIdentifier() << "\" devices...\n";
-    for (Device* device: driver->scanForDevices()) {
-        registerDevice(device);
-    }
-    std::cout << "device scan complete.\n";
 
     return 0;
+}
+
+void Registry::autoDetectDevices() {
+    for (auto pair: drivers) {
+        Driver* driver = pair.second;
+        std::cout << "scanning for \"" << driver->getIdentifier() << "\" devices...\n";
+        for (Device* device: driver->scanForDevices()) {
+            registerDevice(device);
+        }
+    }
 }
 
 void Registry::loadDeviceFromConfig(std::map<std::string, std::string> config) {

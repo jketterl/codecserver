@@ -40,6 +40,10 @@ int Server::main(int argc, char** argv) {
         Registry::get()->loadDeviceFromConfig(args);
     }
 
+    std::cout << "auto-detecing devices...\n";
+    Registry::get()->autoDetectDevices();
+    std::cout << "device scan complete.\n";
+
     for (std::string type: config.getServers()) {
         std::map<std::string, std::string> args = config.getServerConfig(type);
         SocketServer* server = nullptr;
