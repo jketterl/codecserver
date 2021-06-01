@@ -1,13 +1,9 @@
 #include "clientconnection.hpp"
 #include "handshake.pb.h"
-#include "request.pb.h"
 #include "response.pb.h"
-#include "data.pb.h"
-#include "check.pb.h"
 #include "registry.hpp"
 #include <iostream>
 #include <netinet/in.h>
-#include <google/protobuf/any.pb.h>
 
 #define BUFFER_SIZE 65536
 
@@ -16,115 +12,62 @@ using namespace CodecServer::proto;
 
 ClientConnection::ClientConnection(int sock): Connection(sock) {
     try {
-        if (handshake()) {
-            loop();
-        }
+        handshake();
+        loop();
     } catch (ConnectionException e) {
         std::cerr << "connection error: " << e.what() << "\n";
     }
     close();
 }
 
-bool ClientConnection::handshake() {
+void ClientConnection::handshake() {
     GOOGLE_PROTOBUF_VERIFY_VERSION;
     Handshake handshake;
     handshake.set_servername("codecserver");
     handshake.set_serverversion(VERSION);
     sendMessage(&handshake);
+}
 
-    google::protobuf::Any* message = receiveMessage();
-
-    if (message == nullptr) {
-        throw ConnectionException("connection closed before request");
+void ClientConnection::startSession() {
+    if (session == nullptr) {
+        return;
     }
 
-    Response response;
+    session->start();
 
-    if (message->Is<Request>()) {
-        Request request;
-        message->UnpackTo(&request);
-        delete message;
-        std::cout << "client requests codec " << request.codec() << "\n";
+    reader = new std::thread( [this] {
+        read();
+    });
+}
 
-        for (Device* device: Registry::get()->findDevices(request.codec())) {
-            session = device->startSession(&request);
-            if (session != nullptr) break;
-        }
-
-        if (session == nullptr) {
-            response.set_result(Response_Status_ERROR);
-            response.set_message("no device available");
-            sendMessage(&response);
-            return false;
-        }
-        response.set_result(Response_Status_OK);
-        FramingHint* framing = session->getFraming();
-        if (framing != nullptr) {
-            response.set_allocated_framing(framing);
-        }
-
-        sendMessage(&response);
-        return true;
+void ClientConnection::stopSession() {
+    if (session == nullptr) {
+        return;
     }
 
-    if (message->Is<Check>()) {
-        Check check;
-        message->UnpackTo(&check);
-        delete message;
-        std::cout << "check for codec: " << check.codec() << "\n";
+    session->end();
+    reader->join();
 
-        if (!Registry::get()->findDevices(check.codec()).size()) {
-            response.set_result(Response_Status_ERROR);
-            response.set_message("no device available");
-        } else {
-            response.set_result(Response_Status_OK);
-        }
-
-        sendMessage(&response);
-        return false;
-    }
-
-    delete message;
-    throw ConnectionException("unexepected message type receive (expecting Request or Check)");
+    delete session;
+    session = nullptr;
+    delete reader;
+    reader = nullptr;
 }
 
 void ClientConnection::loop() {
-    session->start();
-
-    std::thread reader = std::thread( [this] {
-        read();
-    });
-
     while (run) {
         google::protobuf::Any* message = receiveMessage();
         if (message == nullptr) {
             run = false;
             close();
-        } else if (message->Is<ChannelData>()) {
-            ChannelData* data = new ChannelData();
-            message->UnpackTo(data);
-            std::string input = data->data();
-            session->decode((char*) input.c_str(), input.length());
-            delete data;
-        } else if (message->Is<SpeechData>()) {
-            SpeechData* data = new SpeechData();
-            message->UnpackTo(data);
-            std::string input = data->data();
-            session->encode((char*) input.c_str(), input.length());
-            delete data;
-        } else if (message->Is<Renegotiation>()) {
-            Renegotiation* reneg = new Renegotiation();
-            message->UnpackTo(reneg);
-            Response* response = new Response();
-            try {
-                session->renegotiate(reneg->settings());
-                response->set_result(Response_Status_OK);
-            } catch (const std::exception&) {
-                response->set_result(Response_Status_ERROR);
-            }
-            sendMessage(response);
-            delete response;
-            delete reneg;
+        } else if (
+            checkMessageType<Request>(message) ||
+            checkMessageType<Check>(message) ||
+            checkMessageType<ChannelData>(message) ||
+            checkMessageType<SpeechData>(message) ||
+            checkMessageType<Renegotiation>(message)
+        ) {
+            // we're good
         } else {
             std::cerr << "received unexpected message type\n";
         }
@@ -132,9 +75,95 @@ void ClientConnection::loop() {
         delete message;
     }
 
+    stopSession();
+}
 
-    session->end();
-    reader.join();
+template <typename T>
+bool ClientConnection::checkMessageType(google::protobuf::Any* message) {
+    if (message->Is<T>()) {
+        T* content = new T();
+        message->UnpackTo(content);
+        processMessage(content);
+        return true;
+    }
+    return false;
+}
+
+void ClientConnection::processMessage(ChannelData* data) {
+    std::string input = data->data();
+    if (session == nullptr) {
+        std::cerr << "dropping incoming channel data since we don't have a decoding session\n";
+    } else {
+        session->decode((char*) input.c_str(), input.length());
+    }
+    delete data;
+}
+
+void ClientConnection::processMessage(SpeechData* data) {
+    std::string input = data->data();
+    if (session == nullptr) {
+        std::cerr << "dropping incoming speech data since we don't have an encoding session\n";
+    } else {
+        session->encode((char*) input.c_str(), input.length());
+    }
+    delete data;
+}
+
+void ClientConnection::processMessage(Renegotiation* reneg) {
+    Response* response = new Response();
+    try {
+        session->renegotiate(reneg->settings());
+        response->set_result(Response_Status_OK);
+    } catch (const std::exception&) {
+        response->set_result(Response_Status_ERROR);
+    }
+    sendMessage(response);
+    delete response;
+    delete reneg;
+}
+
+void ClientConnection::processMessage(Request* request) {
+    std::cout << "client requests codec " << request->codec() << "\n";
+
+    // stop existing session, if any
+    stopSession();
+
+    for (Device* device: Registry::get()->findDevices(request->codec())) {
+        session = device->startSession(request);
+        if (session != nullptr) break;
+    }
+
+    Response* response = new Response();
+
+    if (session == nullptr) {
+        response->set_result(Response_Status_ERROR);
+        response->set_message("no device available");
+    } else {
+        response->set_result(Response_Status_OK);
+        FramingHint* framing = session->getFraming();
+        if (framing != nullptr) {
+            response->set_allocated_framing(framing);
+        }
+        startSession();
+    }
+
+    sendMessage(response);
+}
+
+void ClientConnection::processMessage(Check* check) {
+    std::cout << "check for codec: " << check->codec() << "\n";
+    Response* response = new Response();
+
+    if (!Registry::get()->findDevices(check->codec()).size()) {
+        response->set_result(Response_Status_ERROR);
+        response->set_message("no device available");
+    } else {
+        response->set_result(Response_Status_OK);
+    }
+
+    sendMessage(response);
+    delete response;
+    delete check;
 }
 
 void ClientConnection::read() {
