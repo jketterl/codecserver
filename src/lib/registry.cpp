@@ -72,10 +72,14 @@ void Registry::registerDevice(Device* device) {
 
 void Registry::unregisterDevice(Device* device) {
     std::cout << "unregistering device\n";
-    for (auto entry: devices) {
-        auto pos = std::find(entry.second.begin(), entry.second.end(), device);
-        if (pos != entry.second.end()) {
-            entry.second.erase(pos);
+    std::map<std::string, std::vector<Device*>>::iterator it;
+    for (it = devices.begin(); it != devices.end(); it++) {
+        std::vector<Device*>& vec = it->second;
+        std::vector<Device*>::iterator pos = std::find(vec.begin(), vec.end(), device);
+        if (pos != vec.end()) {
+            Device* device = (*pos);
+            vec.erase(pos);
+            delete device;
         }
     }
 }
