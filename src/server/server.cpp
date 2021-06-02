@@ -34,6 +34,11 @@ int Server::main(int argc, char** argv) {
     Scanner scanner;
     scanner.scanModules();
 
+    for (std::string driver: config.getDrivers()) {
+        std::map<std::string, std::string> args = config.getDriverConfig(driver);
+        Registry::get()->configureDriver(driver, args);
+    }
+
     std::cout << "loading devices from configuration...\n";
     for (std::string device: config.getDevices()) {
         std::map<std::string, std::string> args = config.getDeviceConfig(device);

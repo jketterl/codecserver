@@ -12,6 +12,8 @@ namespace CodecServer {
             ServerConfig(std::string path): Config(path) {};
             std::vector<std::string> getDevices();
             std::map<std::string, std::string> getDeviceConfig(std::string key);
+            std::vector<std::string> getDrivers();
+            std::map<std::string, std::string> getDriverConfig(std::string key);
     };
 
 }

@@ -13,6 +13,7 @@ namespace CodecServer {
             // default implementation is a NOOP
             virtual std::vector<Device*> scanForDevices() { return {}; };
             virtual Device* buildFromConfiguration(std::map<std::string, std::string> config) = 0;
+            virtual void configure(std::map<std::string, std::string> config) {};
     };
 
 }

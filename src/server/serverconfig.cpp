@@ -9,3 +9,11 @@ std::vector<std::string> ServerConfig::getDevices() {
 std::map<std::string, std::string> ServerConfig::getDeviceConfig(std::string key) {
     return getSection("device:" + key);
 }
+
+std::vector<std::string> ServerConfig::getDrivers() {
+    return getSections("driver");
+}
+
+std::map<std::string, std::string> ServerConfig::getDriverConfig(std::string key) {
+    return getSection("driver:" + key);
+}

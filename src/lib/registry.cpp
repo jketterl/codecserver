@@ -21,6 +21,15 @@ int Registry::_registerDriver(Driver* driver) {
     return 0;
 }
 
+void Registry::configureDriver(std::string driver, std::map<std::string, std::string> config) {
+    if (drivers.find(driver) == drivers.end()) {
+        std::cerr << "cannot configure driver \"" << driver << "\": not registered";
+        return;
+    }
+
+    drivers[driver]->configure(config);
+}
+
 void Registry::autoDetectDevices() {
     for (auto pair: drivers) {
         Driver* driver = pair.second;
