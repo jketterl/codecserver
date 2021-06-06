@@ -253,6 +253,13 @@ unsigned char Channel::getFramingBits() {
         case 59:
             return 144;
     }
+    short* cwds = getRateP();
+    if (cwds != nullptr) {
+        short dstar[] = {0x0130, 0x0763, 0x4000, 0x0000, 0x0000, 0x0048};
+        if (std::memcmp(cwds, &dstar, sizeof(short) * 6) == 0) {
+            return 72;
+        }
+    }
     return 0;
 }
 
@@ -268,7 +275,7 @@ void Channel::receive(SpeechPacket* packet) {
     // TODO lock to make sure that queue doesn't go away after...
     if (queue == nullptr) {
         delete packet;
-        std::cerr << "received packet while channel is not active. recent shutdown?\n";
+        std::cerr << "received packet while channel is inactive. recent shutdown?\n";
         return;
     }
     try {
@@ -285,7 +292,7 @@ void Channel::receive(ChannelPacket* packet) {
     // TODO lock to make sure that queue doesn't go away after...
     if (queue == nullptr) {
         delete packet;
-        std::cerr << "received packet while channel is not active. recent shutdown?\n";
+        std::cerr << "received packet while channel is inactive. recent shutdown?\n";
         return;
     }
     try {
@@ -349,16 +356,24 @@ void Channel::release() {
 
 void Channel::setup(unsigned char codecIndex, unsigned char direction) {
     this->codecIndex = codecIndex;
+    if (ratep != nullptr) delete(ratep);
+    ratep = nullptr;
     device->writePacket(new SetupRequest(index, codecIndex, direction));
 }
 
 void Channel::setup(short* cwds, unsigned char direction) {
     codecIndex = 0;
+    if (ratep != nullptr && ratep != cwds) delete(ratep);
+    ratep = cwds;
     device->writePacket(new SetupRequest(index, cwds, direction));
 }
 
 unsigned char Channel::getCodecIndex() {
     return codecIndex;
+}
+
+short* Channel::getRateP() {
+    return ratep;
 }
 
 QueueWorker::QueueWorker(Device* device, int fd, BlockingQueue<Packet*>* queue) {
@@ -379,6 +394,11 @@ void QueueWorker::run(int fd) {
     while (dorun) {
         while ((!queue->empty() && in_progress < AMBE3K_FIFO_MAX_PENDING) || in_progress == 0) {
             Packet* packet = queue->pop();
+            if (packet == nullptr) {
+                device->onQueueError("queue returned a null pointer, so assuming queue was shut down. shutting down worker\n");
+                dorun = false;
+                return;
+            }
             packet->writeTo(fd);
             delete packet;
             in_progress += 1;

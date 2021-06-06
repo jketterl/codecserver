@@ -69,7 +69,6 @@ void Ambe3KSession::renegotiate(CodecServer::proto::Settings settings) {
         } else {
             std::cout << "ratep: " << ratepStr << "\n";
             channel->setup(rateP, direction);
-            free(rateP);
         }
     } else {
         std::cout << "invalid parameters\n";

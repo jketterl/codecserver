@@ -13,10 +13,10 @@ namespace CodecServer {
         public:
             Connection(int sock);
             ~Connection();
-            void sendMessage(google::protobuf::Message* message);
+            bool sendMessage(google::protobuf::Message* message);
             google::protobuf::Any* receiveMessage();
-            void sendChannelData(char* buffer, size_t size);
-            void sendSpeechData(char* buffer, size_t size);
+            bool sendChannelData(char* buffer, size_t size);
+            bool sendSpeechData(char* buffer, size_t size);
             void close();
             bool isCompatible(std::string version);
         private:

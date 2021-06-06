@@ -49,12 +49,14 @@ namespace Ambe3K {
             void setup(unsigned char codecIndex, unsigned char direction);
             void setup(short* cwds, unsigned char direction);
             unsigned char getCodecIndex();
+            short* getRateP();
             unsigned char getFramingBits();
         private:
             bool busy = false;
             Device* device;
             unsigned char index;
             unsigned char codecIndex;
+            short* ratep = nullptr;
             BlockingQueue<Ambe3K::Protocol::Packet*>* queue;
     };
 

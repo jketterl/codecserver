@@ -19,17 +19,18 @@ Connection::~Connection() {
     delete inStream;
 }
 
-void Connection::sendMessage(google::protobuf::Message* message) {
+bool Connection::sendMessage(google::protobuf::Message* message) {
     google::protobuf::Any* any = new google::protobuf::Any();
     any->PackFrom(*message);
     FileOutputStream* fos = new FileOutputStream(sock);
     CodedOutputStream* os = new CodedOutputStream(fos);
     uint64_t size = any->ByteSizeLong();
     os->WriteVarint64(size);
-    any->SerializeToCodedStream(os);
+    bool rc = any->SerializeToCodedStream(os);
     delete any;
     delete os;
     delete fos;
+    return rc;
 }
 
 google::protobuf::Any* Connection::receiveMessage() {
@@ -41,24 +42,32 @@ google::protobuf::Any* Connection::receiveMessage() {
     }
     CodedInputStream::Limit l = is->PushLimit(size);
     google::protobuf::Any* any = new google::protobuf::Any();
-    any->ParseFromCodedStream(is);
+    bool rc = any->ParseFromCodedStream(is);
+    while (!rc && !is->ConsumedEntireMessage()) {
+        rc = any->MergeFromCodedStream(is);
+    }
     is->PopLimit(l);
     delete is;
+    if (!rc) {
+        return nullptr;
+    }
     return any;
 }
 
-void Connection::sendChannelData(char* bytes, size_t size) {
+bool Connection::sendChannelData(char* bytes, size_t size) {
     ChannelData* data = new ChannelData();
     data->set_data(std::string(bytes, size));
-    sendMessage(data);
+    bool rc = sendMessage(data);
     delete data;
+    return rc;
 }
 
-void Connection::sendSpeechData(char* bytes, size_t size) {
+bool Connection::sendSpeechData(char* bytes, size_t size) {
     SpeechData* data = new SpeechData();
     data->set_data(std::string(bytes, size));
-    sendMessage(data);
+    bool rc = sendMessage(data);
     delete data;
+    return rc;
 }
 
 void Connection::close() {

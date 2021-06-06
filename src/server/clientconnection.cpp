@@ -25,7 +25,9 @@ void ClientConnection::handshake() {
     Handshake handshake;
     handshake.set_servername("codecserver");
     handshake.set_serverversion(VERSION);
-    sendMessage(&handshake);
+    if (!sendMessage(&handshake)) {
+        throw ConnectionException("sending handshake failed");
+    }
 }
 
 void ClientConnection::startSession() {
@@ -117,7 +119,9 @@ void ClientConnection::processMessage(Renegotiation* reneg) {
     } catch (const std::exception&) {
         response->set_result(Response_Status_ERROR);
     }
-    sendMessage(response);
+    if (!sendMessage(response)) {
+        throw ConnectionException("sending response failed");
+    }
     delete response;
     delete reneg;
 }
@@ -147,7 +151,9 @@ void ClientConnection::processMessage(Request* request) {
         startSession();
     }
 
-    sendMessage(response);
+    if (!sendMessage(response)) {
+        throw ConnectionException("sending response failed");
+    }
 }
 
 void ClientConnection::processMessage(Check* check) {
@@ -161,7 +167,9 @@ void ClientConnection::processMessage(Check* check) {
         response->set_result(Response_Status_OK);
     }
 
-    sendMessage(response);
+    if (!sendMessage(response)) {
+        throw ConnectionException("sending response failed");
+    }
     delete response;
     delete check;
 }
@@ -175,10 +183,12 @@ void ClientConnection::read() {
             run = false;
             break;
         }
-        // TODO: we don't know if it's actually speech data, typing is list in Session::read()
+        // TODO: we don't know if it's actually speech data, typing is lost in Session::read()
         SpeechData* data = new SpeechData();
         data->set_data(std::string(output, size));
-        sendMessage(data);
+        if (!sendMessage(data)) {
+            run = false;
+        }
         delete data;
     }
     free(output);
