@@ -28,6 +28,7 @@ int Server::main(int argc, char** argv) {
     std::signal(SIGINT, &signal_callback_function);
     std::signal(SIGTERM, &signal_callback_function);
     std::signal(SIGQUIT, &signal_callback_function);
+    std::signal(SIGPIPE, &signal_callback_function);
 
     ServerConfig config(configFile);
 
@@ -121,6 +122,9 @@ void Server::printVersion() {
 }
 
 void Server::handle_signal(int signal) {
+    if (signal == SIGPIPE) {
+        return;
+    }
     std::cerr << "received signal: " << signal << "\n";
     stop();
 }
