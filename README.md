@@ -1,6 +1,6 @@
 # Codec Server
 
-The Codec Server will coordinate central dispatching and coordination of (hardware) codecs over the network.
+The Codec Server will coordinate central dispatching and coordination of (hardware or software) codecs over the network.
 
 The network stack is based is connection-oriented, and runs on Unix domain sockets or TCP over IPv4 or IPv6.
 
