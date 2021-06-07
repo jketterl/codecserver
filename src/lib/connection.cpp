@@ -24,7 +24,11 @@ bool Connection::sendMessage(google::protobuf::Message* message) {
     any->PackFrom(*message);
     FileOutputStream* fos = new FileOutputStream(sock);
     CodedOutputStream* os = new CodedOutputStream(fos);
+#if GOOGLE_PROTOBUF_VERSION < 3006001
+    uint64_t size = any->ByteSize();
+#else
     uint64_t size = any->ByteSizeLong();
+#endif
     os->WriteVarint64(size);
     bool rc = any->SerializeToCodedStream(os);
     delete any;
