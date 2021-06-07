@@ -1,6 +1,7 @@
 #include "socketserver.hpp"
 #include "clientconnection.hpp"
 #include <thread>
+#include <iostream>
 
 using namespace CodecServer;
 

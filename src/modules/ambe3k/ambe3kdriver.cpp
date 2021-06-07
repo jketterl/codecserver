@@ -1,5 +1,6 @@
 #include "ambe3kdriver.hpp"
 #include "registry.hpp"
+#include <iostream>
 
 using namespace Ambe3K;
 
