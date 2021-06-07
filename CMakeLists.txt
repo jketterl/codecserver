@@ -14,7 +14,7 @@ include(GNUInstallDirs)
 include(FindProtobuf)
 
 find_package(Threads REQUIRED)
-find_package(Protobuf REQUIRED)
+find_package(Protobuf 3.0 REQUIRED)
 
 SET(CMAKE_CXX_FLAGS_DEBUG "-g -O3 -rdynamic")
 SET(CMAKE_C_FLAGS_DEBUG "-g -O3")
