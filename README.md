@@ -42,6 +42,6 @@ The configuration file is `/etc/codecserver/codecserver.conf` or `/usr/local/etc
 
 The config file uses an INI-style syntax. The section headers use prefixes to specify what part of the system the configuration applies to:
 
-* `[server:{type}]` sections specify over which types of connections the codecserver will be available. The available types are `tcp`, `tcp4` and `unixdomainsockets`. Only the specified servers will be started.
-* `[driver:{id}]` sections can be used to specify options that apply to the driver, or all devices of that driver. The id must match the identification of the driver when registering. Fields of these sections are driver-specific.
-* `[device:{name}]` allow you to add manually-configured devices. Sections of this kind must have a `type={id}` declaration to specify what driver this config will be passed to. Other fields are driver-specific.
+* `[server:{type}]` sections specify the connectivity that codecserver will make available. The available types are `tcp`, `tcp4` and `unixdomainsockets`. Only the specified servers will be started.
+* `[driver:{id}]` sections can be used to specify options that apply to the driver, or all devices of that driver. `id` must match the identification of the driver when registering. Fields of these sections are driver-specific.
+* `[device:{name}]` sections allow you to add manually-configured devices. `name` can be freely selected, but must be unique within your configuration. Sections of this kind must have a `type={id}` declaration to specify what driver this config should use. Other fields are driver-specific.
