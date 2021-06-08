@@ -2,7 +2,7 @@
 
 The Codec Server will coordinate central dispatching and coordination of (hardware or software) codecs over the network.
 
-The network stack is based is connection-oriented, and runs on Unix domain sockets or TCP over IPv4 or IPv6.
+The network stack is connection-oriented, and runs on Unix domain sockets or TCP over IPv4 or IPv6.
 
 It uses a protocol based on [protocol buffers](https://developers.google.com/protocol-buffers) (or protobuf for short) to communicate, exchanging length-delimited Any-encapsulated messages on the sockets.
 
