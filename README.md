@@ -36,7 +36,7 @@ sudo make install
 
 A sample configuration is available in the `conf` directory. It needs to be installed manually before the program can run.
 
-#Configuration
+# Configuration
 
 The configuration file is `/etc/codecserver/codecserver.conf` or `/usr/local/etc/codecserver/codecserver.conf`, depending on your installation.
 
