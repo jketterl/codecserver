@@ -18,43 +18,47 @@ Packet::Packet(char* newData, size_t size) {
     *(short*)(&data[1]) = htons(dataSize - 4);
 }
 
+Packet::~Packet() {
+    free(data);
+}
+
 Packet* Packet::parse(char* data, size_t size) {
-    Packet* p = new Packet(data, size);
-    if (p->verifyChecksum() != 0) {
-        return nullptr;
-    }
-    char type = p->getType();
+    Packet* p = nullptr;
+    char type = data[3];
     if (type == AMBE3K_TYPE_CONTROL) {
-        char opCode = p->payload[0];
+        char opCode = data[4];
         if (opCode >= 0x40 && opCode <= 0x42) {
             // response is for a specific channel... move forward
-            opCode = p->payload[2];
+            opCode = data[6];
         }
         switch(opCode) {
             case AMBE3K_CONTROL_READY:
-                delete p;
-                return new ReadyPacket(data, size);
+                p = new ReadyPacket(data, size);
+                break;
             case AMBE3K_CONTROL_PRODID:
-                delete p;
-                return new ProdIdResponse(data, size);
+                p = new ProdIdResponse(data, size);
+                break;
             case AMBE3K_CONTROL_VERSTRING:
-                delete p;
-                return new VersionStringResponse(data, size);
+                p = new VersionStringResponse(data, size);
+                break;
             case AMBE3K_CONTROL_RATET:
-                delete p;
-                return new RateTResponse(data, size);
+                p = new RateTResponse(data, size);
+                break;
             case AMBE3K_CONTROL_RATEP:
-                delete p;
-                return new RatePResponse(data, size);
+                p = new RatePResponse(data, size);
+                break;
             default:
                 std::cerr << "unexpected opcode: " << std::hex << +opCode << "\n";
+                p = new Packet(data, size);
         }
     } else if (type == AMBE3K_TYPE_AUDIO) {
-        delete p;
-        return new SpeechPacket(data, size);
+        p = new SpeechPacket(data, size);
     } else if (type == AMBE3K_TYPE_AMBE) {
+        p = new ChannelPacket(data, size);
+    }
+    if (p != nullptr && p->verifyChecksum() != 0) {
         delete p;
-        return new ChannelPacket(data, size);
+        return nullptr;
     }
     return p;
 }

@@ -216,8 +216,8 @@ void Device::receivePacket(Packet* packet) {
     }
     RateTResponse* tResponse = dynamic_cast<RateTResponse*>(packet);
     if (tResponse != nullptr) {
-        delete tResponse;
         std::cerr << "setup response received, result = " << +tResponse->getResult() << "\n";
+        delete tResponse;
         return;
     }
     RatePResponse* pResponse = dynamic_cast<RatePResponse*>(packet);
@@ -264,11 +264,17 @@ unsigned char Channel::getFramingBits() {
 }
 
 void Channel::decode(char* input, size_t size) {
-    device->writePacket(new ChannelPacket(index, input, size * 8));
+    // need to make a copy since we do queue the data, and `input` doesn't live long enough
+    char* data = (char*) malloc(size);
+    memcpy(data, input, size);
+    device->writePacket(new ChannelPacket(index, data, size * 8));
 }
 
 void Channel::encode(char* input, size_t size) {
-    device->writePacket(new SpeechPacket(index, input, size / 2));
+    // need to make a copy since we do queue the data, and `input` doesn't live long enough
+    char* data = (char*) malloc(size);
+    memcpy(data, input, size);
+    device->writePacket(new SpeechPacket(index, data, size / 2));
 }
 
 void Channel::receive(SpeechPacket* packet) {

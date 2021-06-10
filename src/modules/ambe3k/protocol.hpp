@@ -41,7 +41,7 @@ namespace Ambe3K::Protocol {
             void writeTo(int fd);
             static Packet* receiveFrom(int fd);
             // necessary to maintain polymorphism
-            virtual ~Packet() {}
+            virtual ~Packet();
         protected:
             char getType();
             void setType(char type);

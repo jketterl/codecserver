@@ -92,20 +92,20 @@ bool ClientConnection::checkMessageType(google::protobuf::Any* message) {
 }
 
 void ClientConnection::processMessage(ChannelData* data) {
-    std::string input = data->data();
     if (session == nullptr) {
         std::cerr << "dropping incoming channel data since we don't have a decoding session\n";
     } else {
+        std::string input = data->data();
         session->decode((char*) input.c_str(), input.length());
     }
     delete data;
 }
 
 void ClientConnection::processMessage(SpeechData* data) {
-    std::string input = data->data();
     if (session == nullptr) {
         std::cerr << "dropping incoming speech data since we don't have an encoding session\n";
     } else {
+        std::string input = data->data();
         session->encode((char*) input.c_str(), input.length());
     }
     delete data;
