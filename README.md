@@ -45,3 +45,18 @@ The config file uses an INI-style syntax. The section headers use prefixes to sp
 * `[server:{type}]` sections specify the connectivity that codecserver will make available. The available types are `tcp`, `tcp4` and `unixdomainsockets`. Only the specified servers will be started.
 * `[driver:{id}]` sections can be used to specify options that apply to the driver, or all devices of that driver. `id` must match the identification of the driver when registering. Fields of these sections are driver-specific.
 * `[device:{name}]` sections allow you to add manually-configured devices. `name` can be freely selected, but must be unique within your configuration. Sections of this kind must have a `type={id}` declaration to specify what driver this config should use. Other fields are driver-specific.
+
+# systemd integration
+
+Since most current linux distributions have adopted systemd by now, codecserver will try to register itself as a systemd service during installation. When manually compiling, you will need to run `systemctl daemon-reload` on initial installation. After that, you should be able to control the codecserver service just like any other service unit.
+
+Examples:
+
+```
+systemctl start codecserver
+systemctl stop codecserver
+systemctl restart codecserver
+systemctl enable codecserver
+systemctl disable codecserver
+journalctl -u codecserver
+```
