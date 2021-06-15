@@ -285,7 +285,7 @@ void Channel::receive(SpeechPacket* packet) {
         return;
     }
     try {
-        queue->push(packet, false);
+        queue->push(packet);
     } catch (QueueFullException) {
         std::cerr << "channel queue full. shutting down queue...\n";
         delete packet;
@@ -302,7 +302,7 @@ void Channel::receive(ChannelPacket* packet) {
         return;
     }
     try {
-        queue->push(packet, false);
+        queue->push(packet);
     } catch (QueueFullException) {
         std::cerr << "channel queue full. shutting down queue...\n";
         delete packet;
