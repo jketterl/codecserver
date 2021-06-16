@@ -47,41 +47,41 @@ void Channel::encode(char* input, size_t size) {
 
 void Channel::receive(SpeechPacket* packet) {
     // TODO lock to make sure that queue doesn't go away after...
-    if (queue == nullptr) {
+    if (outQueue == nullptr) {
         delete packet;
         std::cerr << "received packet while channel is inactive. recent shutdown?\n";
         return;
     }
     try {
-        queue->push(packet);
+        outQueue->push(packet);
     } catch (QueueFullException) {
         std::cerr << "channel queue full. shutting down queue...\n";
         delete packet;
-        delete queue;
-        queue = nullptr;
+        delete outQueue;
+        outQueue = nullptr;
     }
 }
 
 void Channel::receive(ChannelPacket* packet) {
     // TODO lock to make sure that queue doesn't go away after...
-    if (queue == nullptr) {
+    if (outQueue == nullptr) {
         delete packet;
         std::cerr << "received packet while channel is inactive. recent shutdown?\n";
         return;
     }
     try {
-        queue->push(packet);
+        outQueue->push(packet);
     } catch (QueueFullException) {
         std::cerr << "channel queue full. shutting down queue...\n";
         delete packet;
-        delete queue;
-        queue = nullptr;
+        delete outQueue;
+        outQueue = nullptr;
     }
 }
 
 size_t Channel::read(char* output) {
     while (true) {
-        Packet* packet = queue->pop();
+        Packet* packet = outQueue->pop();
         if (packet == nullptr) {
             return 0;
         }
@@ -117,13 +117,13 @@ bool Channel::isBusy() {
 
 void Channel::reserve() {
     busy = true;
-    queue = new BlockingQueue<Packet*>(10);
+    outQueue = new BlockingQueue<Packet*>(10);
 }
 
 void Channel::release() {
-    if (queue != nullptr) {
-        delete queue;
-        queue=nullptr;
+    if (outQueue != nullptr) {
+        delete outQueue;
+        outQueue=nullptr;
     }
     busy = false;
 }
