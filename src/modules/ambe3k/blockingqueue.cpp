@@ -2,21 +2,17 @@
 #include "protocol.hpp"
 
 template <class T>
-BlockingQueue<T>::BlockingQueue(int size) {
+BlockingQueue<T>::BlockingQueue(int size): std::queue<T>() {
     maxSize = size;
 }
 
 template <class T>
-void BlockingQueue<T>::push(T item, bool block) {
+void BlockingQueue<T>::push(T item) {
     std::unique_lock<std::mutex> wlck(writerMutex);
-    if (block) {
-        while (run && full()) {
-            isFull.wait(wlck);
-        }
-        if (!run) return;
-    } else if (full()) {
-        throw QueueFullException();
+    while (run && full()) {
+        isFull.wait(wlck);
     }
+    if (!run) return;
     std::queue<T>::push(item);
     isEmpty.notify_all();
 }
@@ -35,9 +31,7 @@ T BlockingQueue<T>::pop() {
     if (!run) return nullptr;
     T value = std::queue<T>::front();
     std::queue<T>::pop();
-    if (!full()) {
-        isFull.notify_all();
-    }
+    isFull.notify_all();
     return value;
 }
 

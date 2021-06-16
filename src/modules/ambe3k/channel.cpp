@@ -52,14 +52,7 @@ void Channel::receive(SpeechPacket* packet) {
         std::cerr << "received packet while channel is inactive. recent shutdown?\n";
         return;
     }
-    try {
-        outQueue->push(packet);
-    } catch (QueueFullException) {
-        std::cerr << "channel queue full. shutting down queue...\n";
-        delete packet;
-        delete outQueue;
-        outQueue = nullptr;
-    }
+    outQueue->push(packet);
 }
 
 void Channel::receive(ChannelPacket* packet) {
@@ -69,14 +62,7 @@ void Channel::receive(ChannelPacket* packet) {
         std::cerr << "received packet while channel is inactive. recent shutdown?\n";
         return;
     }
-    try {
-        outQueue->push(packet);
-    } catch (QueueFullException) {
-        std::cerr << "channel queue full. shutting down queue...\n";
-        delete packet;
-        delete outQueue;
-        outQueue = nullptr;
-    }
+    outQueue->push(packet);
 }
 
 size_t Channel::read(char* output) {
