@@ -4,7 +4,7 @@ set -euo pipefail
 ARCH=$(uname -m)
 ALL_ARCHS="x86_64 armv7l aarch64"
 TAG=${TAG:-"latest"}
-ARCHTAG="$TAG-$ARCH"
+ARCHTAG="${TAG}-${ARCH}"
 
 usage () {
   echo "Usage: ${0} [command]"
@@ -28,8 +28,8 @@ manifest () {
   # there's no docker manifest rm command, and the create --amend does not work, so we have to clean up manually
   rm -rf "${HOME}/.docker/manifests/docker.io_jketterl_codecserver-${TAG}"
   IMAGE_LIST=""
-  for a in $ALL_ARCHS; do
-    IMAGE_LIST="$IMAGE_LIST jketterl/codecserver:${TAG}-${a}"
+  for a in ${ALL_ARCHS}; do
+    IMAGE_LIST="${IMAGE_LIST} jketterl/codecserver:${TAG}-${a}"
   done
   docker manifest create jketterl/codecserver:${TAG} ${IMAGE_LIST}
   docker manifest push --purge jketterl/codecserver:${TAG}
