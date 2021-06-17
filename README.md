@@ -60,3 +60,7 @@ systemctl enable codecserver
 systemctl disable codecserver
 journalctl -u codecserver
 ```
+
+# Docker
+
+You can find [codecserver Docker images on the Docker hub](https://hub.docker.com/r/jketterl/codecserver). Please have a look at [the wiki](https://github.com/jketterl/codecserver/wiki/Docker) for more information.
