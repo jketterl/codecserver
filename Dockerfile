@@ -17,5 +17,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /tmp/codecserver
 
+EXPOSE 1073
+
+VOLUME /etc/codecserver
 
 CMD [ "/usr/bin/codecserver" ]
