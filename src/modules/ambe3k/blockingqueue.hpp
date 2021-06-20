@@ -5,12 +5,22 @@
 #include <condition_variable>
 #include <stdexcept>
 
+class QueueException: public std::runtime_error {
+    public:
+        QueueException(const char* msg): runtime_error(msg) {}
+};
+
+class QueueFullException: public QueueException {
+    public:
+        QueueFullException(): QueueException("queue full") {}
+};
+
 template <class T>
 class BlockingQueue: public std::queue<T> {
     public:
         BlockingQueue(int size);
         ~BlockingQueue();
-        void push(T item);
+        void push(T item, bool block = true);
         bool full();
         T pop();
 

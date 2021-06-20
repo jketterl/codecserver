@@ -7,12 +7,16 @@ BlockingQueue<T>::BlockingQueue(int size): std::queue<T>() {
 }
 
 template <class T>
-void BlockingQueue<T>::push(T item) {
+void BlockingQueue<T>::push(T item, bool block) {
     std::unique_lock<std::mutex> wlck(writerMutex);
-    while (run && full()) {
-        isFull.wait(wlck);
+    if (block) {
+        while (run && full()) {
+            isFull.wait(wlck);
+        }
+        if (!run) return;
+    } else if (full()) {
+        throw QueueFullException();
     }
-    if (!run) return;
     std::queue<T>::push(item);
     isEmpty.notify_all();
 }

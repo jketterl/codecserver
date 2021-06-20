@@ -52,7 +52,14 @@ void Channel::receive(SpeechPacket* packet) {
         std::cerr << "received packet while channel is inactive. recent shutdown?\n";
         return;
     }
-    outQueue->push(packet);
+    try {
+        outQueue->push(packet, false);
+    } catch (QueueFullException) {
+        std::cerr << "channel queue full. shutting down queue...\n";
+        delete packet;
+        delete outQueue;
+        outQueue = nullptr;
+    }
 }
 
 void Channel::receive(ChannelPacket* packet) {
@@ -62,35 +69,46 @@ void Channel::receive(ChannelPacket* packet) {
         std::cerr << "received packet while channel is inactive. recent shutdown?\n";
         return;
     }
-    outQueue->push(packet);
+    try {
+        outQueue->push(packet, false);
+    } catch (QueueFullException) {
+        std::cerr << "channel queue full. shutting down queue...\n";
+        delete packet;
+        delete outQueue;
+        outQueue = nullptr;
+    }
 }
 
 size_t Channel::read(char* output) {
-    while (true) {
-        Packet* packet = outQueue->pop();
-        if (packet == nullptr) {
-            return 0;
-        }
-
-        // TODO: this loses the typing. callers of read() will not know if the response is channel or speech data.
-
-        SpeechPacket* speech = dynamic_cast<SpeechPacket*>(packet);
-        if (speech != nullptr) {
-            size_t size = speech->getSpeechData(output);
-            delete speech;
-            return size;
-        }
-
-        ChannelPacket* channel = dynamic_cast<ChannelPacket*>(packet);
-        if (channel != nullptr) {
-            size_t size = channel->getChannelData(output);
-            delete channel;
-            return size;
-        }
-
-        std::cerr << "dropping one unexpected packet from channel queue\n";
-        delete packet;
+    if (outQueue == nullptr) {
+        std::cerr << "queue gone while reading! abort!\n";
+        return 0;
     }
+
+    Packet* packet = outQueue->pop();
+    if (packet == nullptr) {
+        return 0;
+    }
+
+    // TODO: this loses the typing. callers of read() will not know if the response is channel or speech data.
+
+    SpeechPacket* speech = dynamic_cast<SpeechPacket*>(packet);
+    if (speech != nullptr) {
+        size_t size = speech->getSpeechData(output);
+        delete speech;
+        return size;
+    }
+
+    ChannelPacket* channel = dynamic_cast<ChannelPacket*>(packet);
+    if (channel != nullptr) {
+        size_t size = channel->getChannelData(output);
+        delete channel;
+        return size;
+    }
+
+    std::cerr << "dropping one unexpected packet from channel queue\n";
+    delete packet;
+    return 0;
 }
 
 unsigned char Channel::getIndex() {
