@@ -27,8 +27,7 @@ class BlockingQueue: public std::queue<T> {
     private:
         int maxSize;
         bool run = true;
-        std::mutex readerMutex;
-        std::mutex writerMutex;
+        std::mutex queueMutex;
         std::condition_variable isFull;
         std::condition_variable isEmpty;
 };

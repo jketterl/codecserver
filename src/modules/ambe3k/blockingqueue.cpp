@@ -8,7 +8,7 @@ BlockingQueue<T>::BlockingQueue(int size): std::queue<T>() {
 
 template <class T>
 void BlockingQueue<T>::push(T item, bool block) {
-    std::unique_lock<std::mutex> wlck(writerMutex);
+    std::unique_lock<std::mutex> wlck(queueMutex);
     if (block) {
         while (run && full()) {
             isFull.wait(wlck);
@@ -28,7 +28,7 @@ bool BlockingQueue<T>::full(){
 
 template <class T>
 T BlockingQueue<T>::pop() {
-    std::unique_lock<std::mutex> lck(readerMutex);
+    std::unique_lock<std::mutex> lck(queueMutex);
     while (run && std::queue<T>::empty()) {
         isEmpty.wait(lck);
     }
