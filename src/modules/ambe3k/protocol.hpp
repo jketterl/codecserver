@@ -37,7 +37,8 @@ namespace Ambe3K::Protocol {
             static Packet* parse(char* data, size_t bytes);
             Packet(char* payload, size_t bytes);
             Packet(size_t bytes): Packet((char*) calloc(bytes, 1), bytes) {};
-            char verifyChecksum();
+            bool hasChecksum();
+            bool isChecksumValid();
             void writeTo(int fd);
             static Packet* receiveFrom(int fd);
             // necessary to maintain polymorphism

@@ -6,9 +6,14 @@ using namespace Ambe3K::Protocol;
 
 Packet::Packet(char* newData, size_t size) {
     // minimum size with parity
-    assert(size >= 6);
+    assert(size >= 4);
     data = newData;
-    payload = data + 4;
+    if (size > 4) {
+        payload = data + 4;
+    } else {
+        // packet has no data
+        payload = nullptr;
+    }
     dataSize = size;
 
     // start byte is constant
@@ -56,7 +61,7 @@ Packet* Packet::parse(char* data, size_t size) {
     } else if (type == AMBE3K_TYPE_AMBE) {
         p = new ChannelPacket(data, size);
     }
-    if (p != nullptr && p->verifyChecksum() != 0) {
+    if (p != nullptr && !p->isChecksumValid()) {
         delete p;
         return nullptr;
     }
@@ -84,8 +89,14 @@ void Packet::updateChecksum() {
     data[dataSize - 1] = getChecksum();
 }
 
-char Packet::verifyChecksum() {
-    return getChecksum() - data[dataSize - 1];
+bool Packet::hasChecksum() {
+    return dataSize >= 6 && data[dataSize - 2] == 0x2F;
+}
+
+bool Packet::isChecksumValid() {
+    // packets without checksum shall pass without checking
+    if (!hasChecksum()) return true;
+    return getChecksum() - data[dataSize - 1] == 0;
 }
 
 void Packet::writeTo(int fd) {
@@ -122,7 +133,7 @@ Packet* Packet::receiveFrom(int fd) {
 }
 
 size_t Packet::getPayloadLength() {
-    return dataSize - 6;
+    return dataSize - 4 - hasChecksum() * 2;
 }
 
 ControlPacket::ControlPacket(size_t bytes): Packet(bytes) {
