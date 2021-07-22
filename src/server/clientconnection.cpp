@@ -18,6 +18,7 @@ ClientConnection::ClientConnection(int sock): Connection(sock) {
         std::cerr << "connection error: " << e.what() << "\n";
     }
     close();
+    delete this;
 }
 
 void ClientConnection::handshake() {
@@ -119,11 +120,12 @@ void ClientConnection::processMessage(Renegotiation* reneg) {
     } catch (const std::exception&) {
         response->set_result(Response_Status_ERROR);
     }
-    if (!sendMessage(response)) {
-        throw ConnectionException("sending response failed");
-    }
+    bool sent = sendMessage(response);
     delete response;
     delete reneg;
+    if (!sent) {
+        throw ConnectionException("sending response failed");
+    }
 }
 
 void ClientConnection::processMessage(Request* request) {
@@ -151,7 +153,10 @@ void ClientConnection::processMessage(Request* request) {
         startSession();
     }
 
-    if (!sendMessage(response)) {
+    bool sent = sendMessage(response);
+    delete response;
+    delete request;
+    if (!sent) {
         throw ConnectionException("sending response failed");
     }
 }
@@ -167,11 +172,12 @@ void ClientConnection::processMessage(Check* check) {
         response->set_result(Response_Status_OK);
     }
 
-    if (!sendMessage(response)) {
-        throw ConnectionException("sending response failed");
-    }
+    bool sent = sendMessage(response);
     delete response;
     delete check;
+    if (!sent) {
+        throw ConnectionException("sending response failed");
+    }
 }
 
 void ClientConnection::read() {

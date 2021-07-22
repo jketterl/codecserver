@@ -42,6 +42,7 @@ google::protobuf::Any* Connection::receiveMessage() {
     uint64_t size;
     is->ReadVarint64(&size);
     if (size == 0) {
+        delete is;
         return nullptr;
     }
     CodedInputStream::Limit l = is->PushLimit(size);

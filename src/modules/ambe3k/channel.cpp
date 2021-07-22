@@ -32,17 +32,11 @@ unsigned char Channel::getFramingBits() {
 }
 
 void Channel::decode(char* input, size_t size) {
-    // need to make a copy since we do queue the data, and `input` doesn't live long enough
-    char* data = (char*) malloc(size);
-    memcpy(data, input, size);
-    device->writePacket(new ChannelPacket(index, data, size * 8));
+    device->writePacket(new ChannelPacket(index, input, size * 8));
 }
 
 void Channel::encode(char* input, size_t size) {
-    // need to make a copy since we do queue the data, and `input` doesn't live long enough
-    char* data = (char*) malloc(size);
-    memcpy(data, input, size);
-    device->writePacket(new SpeechPacket(index, data, size / 2));
+    device->writePacket(new SpeechPacket(index, input, size / 2));
 }
 
 void Channel::receive(SpeechPacket* packet) {
@@ -134,14 +128,14 @@ void Channel::release() {
 
 void Channel::setup(unsigned char codecIndex, unsigned char direction) {
     this->codecIndex = codecIndex;
-    if (ratep != nullptr) delete(ratep);
+    if (ratep != nullptr) free(ratep);
     ratep = nullptr;
     device->writePacket(new SetupRequest(index, codecIndex, direction));
 }
 
 void Channel::setup(short* cwds, unsigned char direction) {
     codecIndex = 0;
-    if (ratep != nullptr && ratep != cwds) delete(ratep);
+    if (ratep != nullptr && ratep != cwds) free(ratep);
     ratep = cwds;
     device->writePacket(new SetupRequest(index, cwds, direction));
 }
