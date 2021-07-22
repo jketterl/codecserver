@@ -10,12 +10,12 @@ namespace Ambe3K {
 
     class QueueWorker {
         public:
-            QueueWorker(Device* device, int fd, BlockingQueue<Ambe3K::Protocol::Packet*>* queue);
+            QueueWorker(Device* device, int fd, BlockingQueue<Ambe3K::Protocol::Packet>* queue);
             ~QueueWorker();
         private:
             void run(int fd);
             Device* device;
-            BlockingQueue<Ambe3K::Protocol::Packet*>* queue;
+            BlockingQueue<Ambe3K::Protocol::Packet>* queue;
             bool dorun = true;
     };
 

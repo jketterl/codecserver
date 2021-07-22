@@ -115,7 +115,7 @@ bool Channel::isBusy() {
 
 void Channel::reserve() {
     busy = true;
-    outQueue = new BlockingQueue<Packet*>(10);
+    outQueue = new BlockingQueue<Packet>(10);
 }
 
 void Channel::release() {

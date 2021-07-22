@@ -15,7 +15,7 @@ using CodecServer::DeviceException;
 Device::Device(std::string tty, unsigned int baudRate) {
     open(tty, baudRate);
     init();
-    queue = new BlockingQueue<Ambe3K::Protocol::Packet*>(10);
+    queue = new BlockingQueue<Ambe3K::Protocol::Packet>(10);
     worker = new QueueWorker(this, fd, queue);
 }
 

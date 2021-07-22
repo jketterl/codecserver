@@ -4,7 +4,7 @@
 using namespace Ambe3K;
 using namespace Ambe3K::Protocol;
 
-QueueWorker::QueueWorker(Device* device, int fd, BlockingQueue<Packet*>* queue) {
+QueueWorker::QueueWorker(Device* device, int fd, BlockingQueue<Packet>* queue) {
     this->device = device;
     this->queue = queue;
     std::thread thread = std::thread( [this, fd] {

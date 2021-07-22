@@ -2,12 +2,12 @@
 #include "protocol.hpp"
 
 template <class T>
-BlockingQueue<T>::BlockingQueue(int size): std::queue<T>() {
+BlockingQueue<T>::BlockingQueue(int size): std::queue<T*>() {
     maxSize = size;
 }
 
 template <class T>
-void BlockingQueue<T>::push(T item, bool block) {
+void BlockingQueue<T>::push(T* item, bool block) {
     std::unique_lock<std::mutex> wlck(queueMutex);
     if (block) {
         while (run && full()) {
@@ -17,24 +17,24 @@ void BlockingQueue<T>::push(T item, bool block) {
     } else if (full()) {
         throw QueueFullException();
     }
-    std::queue<T>::push(item);
+    std::queue<T*>::push(item);
     isEmpty.notify_all();
 }
 
 template <class T>
 bool BlockingQueue<T>::full(){
-    return std::queue<T>::size() >= maxSize;
+    return std::queue<T*>::size() >= maxSize;
 }
 
 template <class T>
-T BlockingQueue<T>::pop() {
+T* BlockingQueue<T>::pop() {
     std::unique_lock<std::mutex> lck(queueMutex);
-    while (run && std::queue<T>::empty()) {
+    while (run && std::queue<T*>::empty()) {
         isEmpty.wait(lck);
     }
     if (!run) return nullptr;
-    T value = std::queue<T>::front();
-    std::queue<T>::pop();
+    T* value = std::queue<T*>::front();
+    std::queue<T*>::pop();
     isFull.notify_all();
     return value;
 }
@@ -46,5 +46,5 @@ BlockingQueue<T>::~BlockingQueue<T>() {
     isFull.notify_all();
 }
 
-template class BlockingQueue<Ambe3K::Protocol::Packet*>;
-template class BlockingQueue<Ambe3K::Protocol::SpeechPacket*>;
+template class BlockingQueue<Ambe3K::Protocol::Packet>;
+template class BlockingQueue<Ambe3K::Protocol::SpeechPacket>;

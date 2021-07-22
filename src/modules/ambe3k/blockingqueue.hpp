@@ -16,13 +16,13 @@ class QueueFullException: public QueueException {
 };
 
 template <class T>
-class BlockingQueue: public std::queue<T> {
+class BlockingQueue: public std::queue<T*> {
     public:
-        BlockingQueue(int size);
+        explicit BlockingQueue(int size);
         ~BlockingQueue();
-        void push(T item, bool block = true);
+        void push(T* item, bool block = true);
         bool full();
-        T pop();
+        T* pop();
 
     private:
         int maxSize;

@@ -32,7 +32,7 @@ namespace Ambe3K {
             void createChannels(unsigned int num);
             int fd;
             std::vector<Channel*> channels;
-            BlockingQueue<Ambe3K::Protocol::Packet*>* queue;
+            BlockingQueue<Ambe3K::Protocol::Packet>* queue;
             QueueWorker* worker;
     };
 
