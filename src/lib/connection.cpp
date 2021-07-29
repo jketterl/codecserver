@@ -76,6 +76,7 @@ bool Connection::sendSpeechData(char* bytes, size_t size) {
 }
 
 void Connection::close() {
+    shutdown(sock, SHUT_RDWR);
     ::close(sock);
 }
 
