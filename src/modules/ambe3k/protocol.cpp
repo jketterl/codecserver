@@ -222,8 +222,11 @@ SpeechPacket::SpeechPacket(unsigned char channel, char* speechData, unsigned cha
 }
 
 size_t SpeechPacket::getSpeechData(char* output) {
+    char* pos = payload;
     // skip channel packets
-    char* pos = payload + 1;
+    if ((payload[0] & 0xF0) == 0x40) {
+        pos += 1;
+    }
     size_t len = 0;
     while (pos < payload + getPayloadLength()) {
         if (pos[0] == 0x00) {
@@ -274,5 +277,11 @@ size_t ChannelPacket::getChannelData(char* output) {
 }
 
 unsigned char ChannelPacket::getChannel() {
-    return payload[0] - 0x40;
+    if ((payload[0] & 0xF0) == 0x40) {
+        return payload[0] - 0x40;
+    } else {
+        // if there's no channel field, then we assume that this is a single-channel device that doesn't respond to PKT_CHANNEL fields
+        // this behavior has been observed on: AMBE-3000R
+        return 0;
+    }
 }
