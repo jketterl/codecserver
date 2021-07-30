@@ -210,7 +210,9 @@ void Device::writePacket(Packet* packet) {
 void Device::receivePacket(Packet* packet) {
     SpeechPacket* speech = dynamic_cast<SpeechPacket*>(packet);
     if (speech != nullptr) {
-        channels[speech->getChannel()]->receive(speech);
+        unsigned int channelNo = speech->getChannel();
+        assert(channelNo < channels.size());
+        channels[channelNo]->receive(speech);
         return;
     }
     RateTResponse* tResponse = dynamic_cast<RateTResponse*>(packet);
