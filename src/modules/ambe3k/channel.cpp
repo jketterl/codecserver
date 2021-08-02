@@ -1,5 +1,7 @@
 #include "channel.hpp"
 
+#include <iostream>
+
 using namespace Ambe3K;
 using namespace Ambe3K::Protocol;
 
