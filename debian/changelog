@@ -1,5 +1,5 @@
-codecserver (0.1.0) UNRELEASED; urgency=low
+codecserver (0.1.0) buster hirsute; urgency=low
 
   * First release
 
- -- Jakob Ketterl <jakob.ketterl@gmx.de>  Sun, 30 May 2021 13:43:00 +0000
+ -- Jakob Ketterl <jakob.ketterl@gmx.de>  Mon, 02 Aug 2021 14:56:00 +0000
