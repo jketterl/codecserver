@@ -1,4 +1,4 @@
 usr/include
 usr/lib/*/pkgconfig
 usr/lib/*/libcodecserver.so
-usr/lib/cmake
+usr/lib/*/cmake
