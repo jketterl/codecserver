@@ -33,7 +33,14 @@ configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
     INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CodecServer
 )
 
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/CodecServerConfigVersion.cmake"
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY AnyNewerVersion
+)
+
 install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/CodecServerConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/CodecServerConfigVersion.cmake"
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CodecServer
 )
