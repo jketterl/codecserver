@@ -9,12 +9,31 @@ file(GLOB CODECSERVER_HEADERS "${PROJECT_SOURCE_DIR}/include/*.hpp")
 set_target_properties(codecserver PROPERTIES PUBLIC_HEADER "${CODECSERVER_HEADERS}")
 
 # for the protobuf includes
-target_include_directories(codecserver PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(codecserver PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}> $<INSTALL_INTERFACE:>)
 
 install(TARGETS codecserver
+    EXPORT CodecServerTargets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/codecserver
 )
 
 configure_file(codecserver.pc.in codecserver.pc @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/codecserver.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+
+install(EXPORT CodecServerTargets
+    FILE CodecServerTargets.cmake
+    NAMESPACE CodecServer::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CodecServer
+)
+
+include(CMakePackageConfigHelpers)
+
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
+    "${CMAKE_CURRENT_BINARY_DIR}/CodecServerConfig.cmake"
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CodecServer
+)
+
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/CodecServerConfig.cmake"
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CodecServer
+)
