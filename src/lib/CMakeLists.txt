@@ -3,7 +3,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE On)
 add_subdirectory(proto)
 
 add_library(codecserver SHARED connection.cpp config.cpp registry.cpp device.cpp $<TARGET_OBJECTS:codecserver_proto>)
-target_link_libraries(codecserver ${Protobuf_LIBRARIES})
+target_link_libraries(codecserver PUBLIC protobuf::libprotobuf)
 set_target_properties(codecserver PROPERTIES VERSION ${PROJECT_VERSION})
 file(GLOB CODECSERVER_HEADERS "${PROJECT_SOURCE_DIR}/include/*.hpp")
 set_target_properties(codecserver PROPERTIES PUBLIC_HEADER "${CODECSERVER_HEADERS}")
