@@ -117,6 +117,10 @@ void ClientConnection::processMessage(Renegotiation* reneg) {
     try {
         session->renegotiate(reneg->settings());
         response->set_result(Response_Status_OK);
+        FramingHint* framing = session->getFraming();
+        if (framing != nullptr) {
+            response->set_allocated_framing(framing);
+        }
     } catch (const std::exception&) {
         response->set_result(Response_Status_ERROR);
     }
