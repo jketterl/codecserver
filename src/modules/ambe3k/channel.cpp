@@ -29,6 +29,10 @@ unsigned char Channel::getFramingBits() {
         if (std::memcmp(cwds, &dstar, sizeof(short) * 6) == 0) {
             return 72;
         }
+        short ysf_vw[] = {0x0558, 0x086b, 0x1030, 0x0000, 0x0000, 0x0190};
+        if (std::memcmp(cwds, &ysf_vw, sizeof(short) & 6) == 0) {
+            return 144;
+        }
     }
     return 0;
 }
