@@ -12,7 +12,7 @@ namespace Ambe3K {
 
     class Ambe3KSession: public CodecServer::Session {
         public:
-            Ambe3KSession(Channel* channel);
+            explicit Ambe3KSession(Channel* channel);
             void encode(char* input, size_t size) override;
             void decode(char* input, size_t size) override;
             size_t read(char* output) override;
