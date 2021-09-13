@@ -11,8 +11,8 @@ namespace CodecServer {
 
     class Connection {
         public:
-            Connection(int sock);
-            ~Connection();
+            explicit Connection(int sock);
+            virtual ~Connection();
             bool sendMessage(google::protobuf::Message* message);
             google::protobuf::Any* receiveMessage();
             bool sendChannelData(char* buffer, size_t size);
@@ -25,12 +25,12 @@ namespace CodecServer {
 
     class ConnectionException: public std::runtime_error {
         public:
-            ConnectionException(const std::string msg): std::runtime_error(msg) {}
+            explicit ConnectionException(const std::string msg): std::runtime_error(msg) {}
     };
 
     class HandshakeException: public ConnectionException {
         public:
-            HandshakeException(const std::string msg): ConnectionException(msg) {}
+            explicit HandshakeException(const std::string msg): ConnectionException(msg) {}
     };
 
 }

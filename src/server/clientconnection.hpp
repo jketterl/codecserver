@@ -13,7 +13,7 @@ namespace CodecServer {
 
     class ClientConnection: public Connection {
         public:
-            ClientConnection(int sock);
+            explicit ClientConnection(int sock);
         private:
             void handshake();
             void loop();
