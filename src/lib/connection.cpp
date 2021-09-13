@@ -17,6 +17,7 @@ Connection::Connection(int sock) {
 
 Connection::~Connection() {
     delete inStream;
+    ::close(sock);
 }
 
 bool Connection::sendMessage(google::protobuf::Message* message) {
@@ -73,11 +74,6 @@ bool Connection::sendSpeechData(char* bytes, size_t size) {
     bool rc = sendMessage(data);
     delete data;
     return rc;
-}
-
-void Connection::close() {
-    shutdown(sock, SHUT_RDWR);
-    ::close(sock);
 }
 
 bool Connection::isCompatible(std::string version) {

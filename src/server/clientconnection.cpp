@@ -17,7 +17,6 @@ ClientConnection::ClientConnection(int sock): Connection(sock) {
     } catch (ConnectionException e) {
         std::cerr << "connection error: " << e.what() << "\n";
     }
-    close();
     delete this;
 }
 
@@ -62,7 +61,6 @@ void ClientConnection::loop() {
         google::protobuf::Any* message = receiveMessage();
         if (message == nullptr) {
             run = false;
-            close();
         } else if (
             checkMessageType<Request>(message) ||
             checkMessageType<Check>(message) ||

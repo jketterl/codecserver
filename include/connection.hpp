@@ -17,7 +17,6 @@ namespace CodecServer {
             google::protobuf::Any* receiveMessage();
             bool sendChannelData(char* buffer, size_t size);
             bool sendSpeechData(char* buffer, size_t size);
-            void close();
             bool isCompatible(std::string version);
         private:
             int sock;
