@@ -15,7 +15,7 @@ Description: Codecserver base library
 
 Package: libcodecserver-dev
 Architecture: any
-Depends: libcodecserver (=${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Depends: libcodecserver (=${binary:Version}), libprotobuf-dev (>= 3), ${shlibs:Depends}, ${misc:Depends}
 Description: Codecserver base library - development files
  Provides includes and protobuf templates to facilitate codecserver integration
 
