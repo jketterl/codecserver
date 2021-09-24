@@ -54,7 +54,7 @@ void Channel::receive(SpeechPacket* packet) {
     }
     try {
         outQueue->push(packet, false);
-    } catch (QueueFullException) {
+    } catch (QueueFullException&) {
         std::cerr << "channel queue full. shutting down queue...\n";
         delete packet;
         delete outQueue;
@@ -71,7 +71,7 @@ void Channel::receive(ChannelPacket* packet) {
     }
     try {
         outQueue->push(packet, false);
-    } catch (QueueFullException) {
+    } catch (QueueFullException&) {
         std::cerr << "channel queue full. shutting down queue...\n";
         delete packet;
         delete outQueue;
@@ -94,7 +94,7 @@ size_t Channel::read(char* output) {
 
     SpeechPacket* speech = dynamic_cast<SpeechPacket*>(packet);
     if (speech != nullptr) {
-        size_t size = speech->getSpeechData(output);
+        size_t size = speech->getSpeechData((short*) output);
         delete speech;
         return size;
     }

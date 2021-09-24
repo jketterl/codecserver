@@ -138,10 +138,14 @@ void Device::init() {
         throw DeviceException("device did not respond to reset");
     }
 
-    ReadyPacket* ready = dynamic_cast<ReadyPacket*>(response);
+    auto* ready = dynamic_cast<ControlPacket*>(response);
     if (ready == nullptr) {
         delete response;
         throw DeviceException("unexpected response from stick");
+    }
+    if (!ready->hasReadyField()) {
+        delete response;
+        throw DeviceException("device is not ready after reset");
     }
     delete ready;
 
@@ -153,10 +157,14 @@ void Device::init() {
         throw DeviceException("device did not respond to product id request");
     }
 
-    ProdIdResponse* prodid = dynamic_cast<ProdIdResponse*>(response);
+    auto* prodid = dynamic_cast<ControlPacket*>(response);
     if (prodid == nullptr) {
         delete response;
         throw DeviceException("unexpected response from stick");
+    }
+    if (!prodid->hasProductId()) {
+        delete response;
+        throw DeviceException("device did not respond with product id as expected");
     }
 
     VersionStringRequest versionStringRequest;
@@ -167,10 +175,13 @@ void Device::init() {
         throw DeviceException("device did not respond to version string request");
     }
 
-    VersionStringResponse* versionString = dynamic_cast<VersionStringResponse*>(response);
+    auto* versionString = dynamic_cast<ControlPacket*>(response);
     if (versionString == nullptr) {
         delete response;
         throw DeviceException("unexpected response from stick");
+    }
+    if (!versionString->hasVersionString()) {
+        throw DeviceException("device did not response with version string as expected");
     }
 
     std::cerr << "Product id: " << prodid->getProductId() << "; Version: " << versionString->getVersionString() << "\n";
@@ -208,23 +219,33 @@ void Device::writePacket(Packet* packet) {
 }
 
 void Device::receivePacket(Packet* packet) {
-    SpeechPacket* speech = dynamic_cast<SpeechPacket*>(packet);
+    auto speech = dynamic_cast<SpeechPacket*>(packet);
     if (speech != nullptr) {
-        unsigned int channelNo = speech->getChannel();
-        assert(channelNo < channels.size());
+        // fallback for single-channel chips that don't respond with a channel number
+        unsigned int channelNo = 0;
+        if (speech->hasChannel()) {
+            channelNo = speech->getChannel();
+            assert(channelNo < channels.size());
+        }
         channels[channelNo]->receive(speech);
         return;
     }
-    RateTResponse* tResponse = dynamic_cast<RateTResponse*>(packet);
-    if (tResponse != nullptr) {
-        std::cerr << "setup response received, result = " << +tResponse->getResult() << "\n";
-        delete tResponse;
-        return;
-    }
-    RatePResponse* pResponse = dynamic_cast<RatePResponse*>(packet);
-    if (pResponse != nullptr) {
-        std::cerr << "setup response received, result = " << +pResponse->getResult() << "\n";
-        delete pResponse;
+    auto control = dynamic_cast<ControlPacket*>(packet);
+    if (control != nullptr) {
+        if (control->hasChannel()) {
+            std::cerr << "channel " << +control->getChannel() << ": ";
+        }
+        if (control->hasInitResponse()) {
+            std::cerr << "init response received; ";
+        }
+        if (control->hasRateTResponse()) {
+            std::cerr << "RateT response received; ";
+        }
+        if (control->hasRatePResponse()) {
+            std::cerr << "RateP response received; ";
+        }
+        std::cerr << "\n";
+        delete control;
         return;
     }
     delete packet;
