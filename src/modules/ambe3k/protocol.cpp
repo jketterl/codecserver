@@ -78,13 +78,19 @@ std::string VersionStringResponseField::getVersionId() {
     return std::string(data + 1, 48);
 }
 
-ChannelRequestField::ChannelRequestField(char *data, unsigned char channel): Field(data) {
+ChannelField::ChannelField(char* data): Field(data) {}
+
+ChannelField::ChannelField(char *data, unsigned char channel): ChannelField(data) {
     assert(channel <= 3);
     data[0] = 0x40 + channel;
 }
 
-size_t ChannelRequestField::getLength() {
+size_t ChannelField::getLength() {
     return 1;
+}
+
+unsigned char ChannelField::getChannel() {
+    return data[0] - 0x40;
 }
 
 ChannelResponseField::ChannelResponseField(char *data): Field(data) {
@@ -208,7 +214,7 @@ Packet::Packet(size_t size): Packet((char*) calloc(size, 1), size) {
     data[0] = AMBE3K_START_BYTE;
 
     // need to fix endianness
-    *(short*)(&data[1]) = htons(dataSize - 4);
+    *(short*)(data + 1) = htons(dataSize - 4);
 }
 
 Packet::Packet(size_t size, char type): Packet(size) {
@@ -249,7 +255,6 @@ void Packet::scanFields() {
         Field* f = buildField(current);
         if (f == nullptr) {
             std::cerr << "Error: packet contains an unexpected field (opcode = " << + *current << ")\n";
-            std::abort();
             // that's a break because we can't continue
             break;
         }
@@ -275,7 +280,7 @@ Field* Packet::buildField(char *current) {
         case 0x40:
         case 0x41:
         case 0x42:
-            return new ChannelResponseField(current);
+            return new ChannelField(current);
     }
     return nullptr;
 }
@@ -283,7 +288,7 @@ Field* Packet::buildField(char *current) {
 void Packet::storeField(Field* field) {
     if (auto cf = dynamic_cast<ChecksumField*>(field)) {
         checksum = cf;
-    } else if (auto cr = dynamic_cast<ChannelResponseField*>(field)) {
+    } else if (auto cr = dynamic_cast<ChannelField*>(field)) {
         channel = cr;
     } else {
         std::cerr << "Error: unexpected field in storeField()\n";
@@ -365,7 +370,7 @@ ControlPacket::~ControlPacket() {
     delete ready;
     delete prodid;
     delete version;
-    delete channel;
+    delete channelResponse;
     delete ratePResponse;
     delete rateTResponse;
     delete initResponse;
@@ -385,6 +390,10 @@ Field* ControlPacket::buildField(char *current) {
             return new RatePResponseField(current);
         case AMBE3K_CONTROL_INIT:
             return new InitResponseField(current);
+        case 0x40:
+        case 0x41:
+        case 0x42:
+            return new ChannelResponseField(current);
         default:
             return Packet::buildField(current);
     }
@@ -403,6 +412,8 @@ void ControlPacket::storeField(Field* field) {
         rateTResponse = rtr;
     } else if (auto ir = dynamic_cast<InitResponseField*>(field)) {
         initResponse = ir;
+    } else if (auto cr = dynamic_cast<ChannelResponseField*>(field)) {
+        channelResponse = cr;
     } else {
         Packet::storeField(field);
     }
@@ -438,6 +449,14 @@ bool ControlPacket::hasRateTResponse() {
 
 bool ControlPacket::hasInitResponse() {
     return initResponse != nullptr;
+}
+
+bool ControlPacket::hasChannel() {
+    return channelResponse != nullptr;
+}
+
+unsigned char ControlPacket::getChannel() {
+    return channelResponse->getChannel();
 }
 
 ResetPacket::ResetPacket(): ControlPacket(7) {
@@ -476,7 +495,7 @@ VersionStringRequest::~VersionStringRequest() {
 SetupRequest::SetupRequest(unsigned char channel, unsigned char index, unsigned char direction): ControlPacket(11) {
     assert(channel <= 3);
     size_t offset = 0;
-    this->channel = new ChannelRequestField(payload + offset, channel);
+    this->channel = new ChannelField(payload + offset, channel);
     offset += this->channel->getLength();
     request = new RateTRequestField(payload + offset, index);
     offset += request->getLength();
@@ -488,7 +507,7 @@ SetupRequest::SetupRequest(unsigned char channel, unsigned char index, unsigned 
 SetupRequest::SetupRequest(unsigned char channel, short* cwds, unsigned char direction): ControlPacket(22) {
     assert(channel <= 3);
     size_t offset = 0;
-    this->channel = new ChannelRequestField(payload + offset, channel);
+    this->channel = new ChannelField(payload + offset, channel);
     offset += this->channel->getLength();
     request = new RatePRequestField(payload + offset, cwds);
     offset += request->getLength();
@@ -507,9 +526,11 @@ ChannelPacket::ChannelPacket(unsigned char channel, char* channelData, unsigned 
     Packet((int) ((bits + 7) / 8) + 9, AMBE3K_TYPE_AMBE)
 {
     size_t offset = 0;
-    this->channel = new ChannelRequestField(payload + offset, channel);
+    this->channel = new ChannelField(payload + offset, channel);
     offset += this->channel->getLength();
     chanD = new ChanDField(payload + offset, channelData, bits);
+    offset += chanD->getLength();
+    checksum = new ChecksumField(payload + offset);
 }
 
 ChannelPacket::~ChannelPacket() {
@@ -538,9 +559,11 @@ SpeechPacket::SpeechPacket(unsigned char channel, char* speechData, unsigned cha
     Packet(samples * 2 + 9, AMBE3K_TYPE_AUDIO)
 {
     size_t offset = 0;
-    this->channel = new ChannelRequestField(payload + offset, channel);
+    this->channel = new ChannelField(payload + offset, channel);
     offset += this->channel->getLength();
     speechD = new SpeechDField(payload + offset, speechData, samples);
+    offset += speechD->getLength();
+    checksum = new ChecksumField(payload + offset);
 }
 
 SpeechPacket::~SpeechPacket() {

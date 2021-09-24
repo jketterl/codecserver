@@ -92,12 +92,16 @@ namespace Ambe3K::Protocol {
             std::string getVersionId();
     };
 
-    class ChannelRequestField: public Field {
+    class ChannelField: public Field {
         public:
-            explicit ChannelRequestField(char* data, unsigned char channel);
+            ChannelField(char* data, unsigned char channel);
+            explicit ChannelField(char* data);
             size_t getLength() override;
+            unsigned char getChannel();
     };
 
+    // in most cases, ChannelField is sufficient for both sending and receiving
+    // in the ControlPacket however, there's an extra 0 following the channel byte, so we have an extra implementation for that case
     class ChannelResponseField: public Field {
         public:
             explicit ChannelResponseField(char* data);
@@ -172,8 +176,8 @@ namespace Ambe3K::Protocol {
             // necessary to maintain polymorphism
             virtual ~Packet();
 
-            bool hasChannel();
-            unsigned char getChannel();
+            virtual bool hasChannel();
+            virtual unsigned char getChannel();
         protected:
             // used when parsing incoming packets
             Packet(char* payload, size_t bytes);
@@ -190,7 +194,7 @@ namespace Ambe3K::Protocol {
 
             char* payload;
             ChecksumField* checksum = nullptr;
-            ChannelResponseField* channel = nullptr;
+            ChannelField* channel = nullptr;
         private:
             char getChecksum();
             char* data;
@@ -211,6 +215,8 @@ namespace Ambe3K::Protocol {
             bool hasRatePResponse();
             bool hasRateTResponse();
             bool hasInitResponse();
+            bool hasChannel() override;
+            unsigned char getChannel() override;
         protected:
             Field* buildField(char* current) override;
             void storeField(Field* field) override;
@@ -221,6 +227,7 @@ namespace Ambe3K::Protocol {
             RateTResponseField* rateTResponse = nullptr;
             RatePResponseField* ratePResponse = nullptr;
             InitResponseField* initResponse = nullptr;
+            ChannelResponseField* channelResponse = nullptr;
     };
 
     class ResetPacket: public ControlPacket {
@@ -253,7 +260,6 @@ namespace Ambe3K::Protocol {
             SetupRequest(unsigned char channel, short* cwds, unsigned char direction);
             ~SetupRequest() override;
         private:
-            ChannelRequestField* channel;
             Field* request;
             InitRequestField* init;
     };
@@ -268,7 +274,6 @@ namespace Ambe3K::Protocol {
             Field* buildField(char* current) override;
             void storeField(Field* field) override;
         private:
-            ChannelRequestField* channel = nullptr;
             ChanDField* chanD = nullptr;
     };
 
@@ -282,7 +287,6 @@ namespace Ambe3K::Protocol {
             Field* buildField(char* current) override;
             void storeField(Field* field) override;
         private:
-            ChannelRequestField* channel = nullptr;
             SpeechDField* speechD = nullptr;
     };
 
