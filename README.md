@@ -32,6 +32,7 @@ cd build
 cmake ..
 make
 sudo make install
+sudo ldconfig
 ```
 
 A sample configuration is available in the `conf` directory. It needs to be installed manually before the program can run.
