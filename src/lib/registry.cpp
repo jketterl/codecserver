@@ -23,7 +23,7 @@ int Registry::_registerDriver(Driver* driver) {
 
 void Registry::configureDriver(std::string driver, std::map<std::string, std::string> config) {
     if (drivers.find(driver) == drivers.end()) {
-        std::cerr << "cannot configure driver \"" << driver << "\": not registered";
+        std::cerr << "cannot configure driver \"" << driver << "\": not registered\n";
         return;
     }
 
