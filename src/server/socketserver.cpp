@@ -9,33 +9,45 @@ SocketServer::~SocketServer() {
     stop();
 }
 
-void SocketServer::setupSocket() {
-    sock = getSocket();
-    if (sock == -1) {
-        std::cerr << "socket error: " << strerror(errno) << "\n";
-        return;
+int SocketServer::setupSocket() {
+
+    int result = 0;
+
+    this->sock = getSocket();
+
+    if (this->sock == -1) {
+        std::cerr << "socket error: " << strerror(errno) << std::endl;
+        result = -1;
     }
 
-    int reuse = 1;
-    if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(int)) == -1) {
-        std::cerr << "error setting socket options: " << strerror(errno) << "\n";
-        return;
-    }
-
-    int rc = bind();
-    if (rc < 0) {
-        if (rc == -1) {
-            std::cerr << "bind error: " << strerror(errno) << "\n";
-        } else {
-            std::cerr << "bind error: unknown\n";
+    if (result == 0) {
+        int reuse = 1;
+        if (setsockopt(this->sock, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(int)) == -1) {
+            std::cerr << "error setting socket options: " << strerror(errno) << std::endl;
+            result = -1;
         }
-        return;
     }
 
-    if (listen(sock, 1) == -1) {
-        std::cerr << "listen error: " << strerror(errno) << "\n";
-        return;
+    if (result == 0) {
+        int rc = this->bind();
+        if (rc < 0) {
+            if (rc == -1) {
+                std::cerr << "bind error: " << strerror(errno) << std::endl;
+            } else {
+                std::cerr << "bind error: unknown" << std::endl;
+            }
+            result = -1;
+        }
     }
+
+    if (result == 0) {
+        if (listen(this->sock, 1) == -1) {
+            std::cerr << "listen error: " << strerror(errno) << std::endl;
+            result = -1;
+        }
+    }
+
+    return result;
 }
 
 void SocketServer::start() {

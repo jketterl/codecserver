@@ -65,18 +65,25 @@ int Server::main(int argc, char** argv) {
             std::cerr << "unknown server type: \"" << type << "\"\n";
         } else {
             server->readConfig(args);
-            server->setupSocket();
-            servers.push_back(server);
+            if (server->setupSocket() == 0) {
+                servers.push_back(server);
+            } else {
+                std::cerr << "Server '" << type << "' setup failed" << std::endl;
+            }
         }
     }
 
-    for (SocketServer* server: servers) {
-        server->start();
-    }
+    if (servers.size() == 0) {
+        std::cerr << "No valid servers configured." << std::endl;
+    } else {
+        for (SocketServer* server: servers) {
+            server->start();
+        }
 
-    for (SocketServer* server: servers) {
-        server->join();
-        delete server;
+        for (SocketServer* server: servers) {
+            server->join();
+            delete server;
+        }
     }
 
     return 0;
