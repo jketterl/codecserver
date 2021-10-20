@@ -7,14 +7,14 @@
 
 using namespace CodecServer;
 
-void UnixDomainSocketServer::readConfig(std::map<std::string, std::string> config) {
+void UnixDomainSocketServer::readConfig(const std::map<std::string, std::string>& config) {
     if (config.find("socket") != config.end()) {
-        socket_path = config["socket"];
+        socket_path = config.at("socket");
     }
 }
 
 int UnixDomainSocketServer::clearSocket() {
-    struct stat sb;
+    struct stat sb {};
     if (lstat(socket_path.c_str(), &sb) == -1) {
         // if the file doesn't exist, we don't need to clear it. everything's fine.
         if (errno == ENOENT) {
@@ -43,7 +43,7 @@ int UnixDomainSocketServer::bind() {
         return rc;
     }
 
-    sockaddr_un addr;
+    sockaddr_un addr {};
     memset(&addr, 0, sizeof(addr));
     addr.sun_family = AF_UNIX;
     strncpy(addr.sun_path, socket_path.c_str(), socket_path.length());
@@ -52,7 +52,7 @@ int UnixDomainSocketServer::bind() {
     // change permissions so that others can use the socket, too
     if (chmod(socket_path.c_str(), S_IRWXU | S_IRWXG | S_IRWXO) == -1) {
         std::cerr << "error setting socket permissions: " << strerror(errno) << "\n";
-    };
+    }
 
     return rc;
 }

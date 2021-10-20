@@ -9,9 +9,8 @@ namespace CodecServer {
 
     class SocketServer {
         public:
-            SocketServer() {}
             virtual ~SocketServer();
-            virtual void readConfig(std::map<std::string, std::string> config) {};
+            virtual void readConfig(const std::map<std::string, std::string>& config) {};
             virtual int getSocket() = 0;
             virtual int bind() = 0;
             virtual void setupSocket();
@@ -20,7 +19,7 @@ namespace CodecServer {
             virtual void run();
             virtual void join();
         protected:
-            int sock;
+            int sock = -1;
             bool dorun = true;
         private:
             std::thread thread;

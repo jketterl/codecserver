@@ -8,7 +8,7 @@ namespace CodecServer {
     class UnixDomainSocketServer: public SocketServer {
         public:
             UnixDomainSocketServer(): SocketServer() {}
-            void readConfig(std::map<std::string, std::string> config) override;
+            void readConfig(const std::map<std::string, std::string>& config) override;
             int clearSocket();
             int getSocket() override;
             int bind() override;

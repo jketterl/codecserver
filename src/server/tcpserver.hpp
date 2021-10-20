@@ -8,7 +8,7 @@ namespace CodecServer {
     class TcpServer: public SocketServer {
         public:
             TcpServer(): SocketServer() {}
-            void readConfig(std::map<std::string, std::string> config) override;
+            void readConfig(const std::map<std::string, std::string>& config) override;
         protected:
             std::string bindAddr;
             unsigned short port = 1073;
