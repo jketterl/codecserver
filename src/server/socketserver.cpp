@@ -1,7 +1,9 @@
-#include "socketserver.hpp"
-#include "clientconnection.hpp"
-#include <thread>
 #include <iostream>
+#include <stdexcept>
+#include <thread>
+
+#include "clientconnection.hpp"
+#include "socketserver.hpp"
 
 using namespace CodecServer;
 
@@ -9,45 +11,33 @@ SocketServer::~SocketServer() {
     stop();
 }
 
-int SocketServer::setupSocket() {
-
-    int result = 0;
+void SocketServer::setupSocket() {
 
     this->sock = getSocket();
 
     if (this->sock == -1) {
-        std::cerr << "socket error: " << strerror(errno) << std::endl;
-        result = -1;
+        throw std::runtime_error("socket error: " + std::string(strerror(errno)));
     }
 
-    if (result == 0) {
-        int reuse = 1;
-        if (setsockopt(this->sock, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(int)) == -1) {
-            std::cerr << "error setting socket options: " << strerror(errno) << std::endl;
-            result = -1;
+    int reuse = 1;
+    if (setsockopt(this->sock, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(int)) == -1) {
+        throw std::runtime_error("error setting socket options: " + std::string(strerror(errno)));
+    }
+
+    int rc = this->bind();
+    if (rc < 0) {
+        if (rc == -1) {
+            throw std::runtime_error("bind error: " + std::string(strerror(errno)));
+        } else {
+            throw std::runtime_error("bind error: unknown");
         }
     }
 
-    if (result == 0) {
-        int rc = this->bind();
-        if (rc < 0) {
-            if (rc == -1) {
-                std::cerr << "bind error: " << strerror(errno) << std::endl;
-            } else {
-                std::cerr << "bind error: unknown" << std::endl;
-            }
-            result = -1;
-        }
+    if (listen(this->sock, 1) == -1) {
+        throw std::runtime_error("listen error: " + std::string(strerror(errno)));
     }
 
-    if (result == 0) {
-        if (listen(this->sock, 1) == -1) {
-            std::cerr << "listen error: " << strerror(errno) << std::endl;
-            result = -1;
-        }
-    }
-
-    return result;
+    return;
 }
 
 void SocketServer::start() {
