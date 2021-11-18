@@ -1,8 +1,13 @@
 #include "ambe3kdriver.hpp"
 #include "registry.hpp"
+#include "udevmonitor.hpp"
 #include <iostream>
 
 using namespace Ambe3K;
+
+Driver::Driver() {
+    new Ambe3K::Udev::Monitor();
+}
 
 std::string Driver::getIdentifier(){
     return "ambe3k";

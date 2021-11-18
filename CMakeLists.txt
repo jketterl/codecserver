@@ -10,11 +10,14 @@ add_definitions(-DVERSION="${PROJECT_VERSION}-dev")
 enable_language(CXX)
 set(CMAKE_CXX_STANDARD 11)
 
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/")
+
 include(GNUInstallDirs)
 include(FindProtobuf)
 
 find_package(Threads REQUIRED)
 find_package(Protobuf 3.0 REQUIRED)
+find_package(udev)
 
 SET(CMAKE_CXX_FLAGS_DEBUG "-g -O3 -rdynamic")
 SET(CMAKE_C_FLAGS_DEBUG "-g -O3")
