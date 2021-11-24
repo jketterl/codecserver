@@ -25,6 +25,7 @@ Device::~Device() {
     for (Channel* c: channels) {
         delete c;
     }
+    ::close(fd);
 }
 
 std::vector<std::string> Device::getCodecs() {
@@ -37,16 +38,16 @@ CodecServer::Session* Device::startSession(CodecServer::proto::Request* request)
         if (!channel->isBusy()) {
             std::cerr << "starting new session on channel " << +channel->getIndex() << "\n";
             channel->reserve();
-            Ambe3KSession* session = new Ambe3KSession(channel);
+            auto* session = new Ambe3KSession(channel);
             try {
                 session->renegotiate(request->settings());
                 return session;
-            } catch (std::invalid_argument) {
+            } catch (std::invalid_argument&) {
                 std::cerr << "invalid or unsupported channel index\n";
-                return nullptr;
             }
             session->end();
             delete session;
+            return nullptr;
         }
     }
     return nullptr;

@@ -33,7 +33,7 @@ namespace Ambe3K {
             unsigned char index;
             unsigned char codecIndex;
             short* ratep = nullptr;
-            BlockingQueue<Ambe3K::Protocol::Packet>* outQueue;
+            BlockingQueue<Ambe3K::Protocol::Packet>* outQueue = nullptr;
     };
 
 }

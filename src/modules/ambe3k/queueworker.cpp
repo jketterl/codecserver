@@ -22,6 +22,7 @@ void QueueWorker::run(int fd) {
     while (dorun) {
         while ((!queue->empty() && in_progress < AMBE3K_FIFO_MAX_PENDING) || in_progress == 0) {
             Packet* packet = queue->pop();
+            if (!dorun) return;
             if (packet == nullptr) {
                 device->onQueueError("queue returned a null pointer, so assuming queue was shut down. shutting down worker\n");
                 dorun = false;

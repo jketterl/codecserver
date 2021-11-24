@@ -7,6 +7,7 @@
 #include "queueworker.hpp"
 #include "proto/request.pb.h"
 #include <termios.h>
+#include <string>
 
 namespace Ambe3K {
 
@@ -18,7 +19,7 @@ namespace Ambe3K {
     class Device: public CodecServer::Device {
         public:
             Device(std::string tty, unsigned int baudRate);
-            ~Device();
+            ~Device() override;
             std::vector<std::string> getCodecs() override;
             CodecServer::Session* startSession(CodecServer::proto::Request* request) override;
             void writePacket(Ambe3K::Protocol::Packet* packet);

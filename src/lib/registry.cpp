@@ -55,7 +55,7 @@ void Registry::loadDeviceFromConfig(std::map<std::string, std::string> config) {
         if (device != nullptr) {
             registerDevice(device);
         }
-    } catch (const DeviceException e) {
+    } catch (const DeviceException& e) {
         std::cerr << "unable to create device: " << e.what() << "\n";
     }
 }

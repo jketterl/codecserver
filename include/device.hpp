@@ -16,6 +16,7 @@ namespace CodecServer {
 
     class Device {
         public:
+            virtual ~Device() = default;
             virtual std::vector<std::string> getCodecs() = 0;
             virtual Session* startSession(Request* request) = 0;
     };
