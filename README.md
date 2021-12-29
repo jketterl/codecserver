@@ -16,12 +16,12 @@ The OpenWebRX project is hosting codecserver packages in their repositories. Ple
 
 # Compiling from sources
 
-Before compiling, please make sure you have the necessary protobuf libraries installed. Most distributions will ship separate development packages for the development files.
+Before compiling, please make sure you have the necessary dependencies installed. Most distributions will ship separate development packages for the development files.
 
 For example, on Debian distributions you will need to install these packages:
 
 ```
-apt-get install libprotobuf-dev protobuf-compiler
+apt-get install libprotobuf-dev protobuf-compiler libudev-dev
 ```
 
 This project comes with a cmake build. It is recommended to build in a separate directory.
