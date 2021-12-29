@@ -254,7 +254,7 @@ void Packet::scanFields() {
     while (remaining > 0) {
         Field* f = buildField(current);
         if (f == nullptr) {
-            std::cerr << "Error: packet contains an unexpected field (opcode = " << + *current << ")\n";
+            std::cerr << "Error: packet contains an unexpected field (opcode = " << + *current << "; dataSize = " << dataSize << "; remaining = " << remaining << ")\n";
             // that's a break because we can't continue
             break;
         }
