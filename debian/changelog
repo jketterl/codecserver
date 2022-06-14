@@ -1,10 +1,10 @@
-codecserver (0.2.0) UNRELEASED; urgency=low
+codecserver (0.2.0) bullseye jammy; urgency=low
 
   * Rework protocol to fix problems with AMBE-3000 (single channel) devices
   * Added udev integration to process USB hotplug events (including the ones
     during boot)
 
- -- Jakob Ketterl <jakob.ketterl@gmx.de>  Mon, 02 Aug 2021 19:37:00 +0000
+ -- Jakob Ketterl <jakob.ketterl@gmx.de>  Tue, 14 Jun 2022 20:48:00 +0000
 
 codecserver (0.1.0) buster hirsute; urgency=low
 
