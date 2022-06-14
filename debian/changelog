@@ -1,5 +1,6 @@
 codecserver (0.2.0) UNRELEASED; urgency=low
 
+  * Rework protocol to fix problems with AMBE-3000 (single channel) devices
   * Added udev integration to process USB hotplug events (including the ones
     during boot)
 
