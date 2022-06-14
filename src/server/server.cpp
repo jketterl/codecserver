@@ -1,14 +1,16 @@
+#include <csignal>
+#include <functional>
+#include <getopt.h>
+#include <iostream>
+#include <sysexits.h>
+
+#include "driver.hpp"
+#include "registry.hpp"
 #include "server.hpp"
 #include "scanner.hpp"
 #include "serverconfig.hpp"
-#include "registry.hpp"
-#include "driver.hpp"
-#include "unixdomainsocketserver.hpp"
 #include "tcpserver.hpp"
-#include <iostream>
-#include <csignal>
-#include <getopt.h>
-#include <functional>
+#include "unixdomainsocketserver.hpp"
 
 using namespace CodecServer;
 
@@ -40,19 +42,20 @@ int Server::main(int argc, char** argv) {
         Registry::get()->configureDriver(driver, args);
     }
 
-    std::cout << "loading devices from configuration...\n";
+    std::cout << "loading devices from configuration..." << std::endl;
     for (std::string device: config.getDevices()) {
         std::map<std::string, std::string> args = config.getDeviceConfig(device);
         Registry::get()->loadDeviceFromConfig(args);
     }
 
-    std::cout << "auto-detecing devices...\n";
+    std::cout << "auto-detecting devices..." << std::endl;
     Registry::get()->autoDetectDevices();
-    std::cout << "device scan complete.\n";
+    std::cout << "device scan complete." << std::endl;
 
     for (std::string type: config.getServers()) {
         std::map<std::string, std::string> args = config.getServerConfig(type);
         SocketServer* server = nullptr;
+
         if (type == "unixdomainsockets") {
             server = new UnixDomainSocketServer();
         } else if (type == "tcp4") {
@@ -62,12 +65,24 @@ int Server::main(int argc, char** argv) {
         }
 
         if (server == nullptr) {
-            std::cerr << "unknown server type: \"" << type << "\"\n";
-        } else {
-            server->readConfig(args);
+            std::cerr << "unknown configured server type: \"" << type << "\"" << std::endl;
+            continue;
+        }
+
+        server->readConfig(args);
+        try {
             server->setupSocket();
             servers.push_back(server);
         }
+        catch(const std::runtime_error& ex) {
+            std::cerr << ex.what() << std::endl;
+            std::cerr << "server type \"" << type << "\" setup failed." << std::endl;
+        }
+    }
+
+    if (servers.size() == 0) {
+        std::cerr << "WARNING: No valid servers configured." << std::endl;
+        return EXIT_FAILURE;
     }
 
     for (SocketServer* server: servers) {
@@ -79,7 +94,7 @@ int Server::main(int argc, char** argv) {
         delete server;
     }
 
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 bool Server::parseOptions(int argc, char** argv) {
