@@ -1,3 +1,7 @@
+codecserver (0.3.0) UNRELEASED; urgency=low
+
+ -- Jakob Ketterl <jakob.ketterl@gmx.de>  Thu, 16 Jun 2022 17:50:00 +0000
+
 codecserver (0.2.0) bullseye jammy; urgency=low
 
   * Rework protocol to fix problems with AMBE-3000 (single channel) devices
