@@ -4,7 +4,7 @@ add_subdirectory(proto)
 
 add_library(codecserver SHARED connection.cpp config.cpp registry.cpp device.cpp $<TARGET_OBJECTS:codecserver_proto>)
 target_link_libraries(codecserver PUBLIC ${Protobuf_LIBRARIES})
-set_target_properties(codecserver PROPERTIES VERSION ${PROJECT_VERSION})
+set_target_properties(codecserver PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
 file(GLOB CODECSERVER_HEADERS "${PROJECT_SOURCE_DIR}/include/*.hpp")
 set_target_properties(codecserver PROPERTIES PUBLIC_HEADER "${CODECSERVER_HEADERS}")
 
