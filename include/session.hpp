@@ -10,6 +10,7 @@ namespace CodecServer {
 
     class Session {
         public:
+            virtual ~Session() = default;
             virtual void start() {};
             virtual void decode(char* input, size_t size) = 0;
             virtual void encode(char* input, size_t size) = 0;

@@ -5,4 +5,5 @@ package CodecServer.proto;
 message Handshake {
   string serverName = 1;
   string serverVersion = 2;
+  uint32 protocolVersion = 3;
 }

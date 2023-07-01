@@ -1,4 +1,5 @@
 #include "connection.hpp"
+#include "protocol.hpp"
 #include "proto/data.pb.h"
 #include <unistd.h>
 #include <netinet/in.h>
@@ -76,6 +77,14 @@ bool Connection::sendSpeechData(char* bytes, size_t size) {
     return rc;
 }
 
-bool Connection::isCompatible(std::string version) {
-    return version == VERSION;
+bool Connection::isCompatible(uint32_t protocolVersion) {
+    // this method should model any upwards / downwards compatibility in protocol versions
+    // precompiler condition is for protection only, it's not necessary to list previous versions here.
+#if PROTOCOL_VERSION == 1
+    // version 0 did not explicitly exist, but protobuf fills the field with 0, which can be used to handle older versions.
+    // version 1 introduced the protocol version field and is otherwise identical to the previous protocol.
+    if (protocolVersion == 0 || protocolVersion == 1) return true;
+#endif
+    // an exact match should always pass
+    return protocolVersion == PROTOCOL_VERSION;
 }

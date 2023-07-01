@@ -2,6 +2,7 @@
 #include "proto/handshake.pb.h"
 #include "proto/response.pb.h"
 #include "registry.hpp"
+#include "protocol.hpp"
 #include <iostream>
 #include <netinet/in.h>
 
@@ -14,7 +15,7 @@ ClientConnection::ClientConnection(int sock): Connection(sock) {
     try {
         handshake();
         loop();
-    } catch (ConnectionException e) {
+    } catch (ConnectionException& e) {
         std::cerr << "connection error: " << e.what() << "\n";
     }
     delete this;
@@ -25,6 +26,7 @@ void ClientConnection::handshake() {
     Handshake handshake;
     handshake.set_servername("codecserver");
     handshake.set_serverversion(VERSION);
+    handshake.set_protocolversion(PROTOCOL_VERSION);
     if (!sendMessage(&handshake)) {
         throw ConnectionException("sending handshake failed");
     }
