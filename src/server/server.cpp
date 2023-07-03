@@ -62,11 +62,22 @@ int Server::main(int argc, char** argv) {
 
         if (server == nullptr) {
             std::cerr << "unknown server type: \"" << type << "\"\n";
-        } else {
-            server->readConfig(args);
+            continue;
+        }
+
+        server->readConfig(args);
+        try {
             server->setupSocket();
             servers.push_back(server);
+        } catch (const std::runtime_error& ex) {
+            std::cerr << "server type \"" << type << "\" setup failed:\n";
+            std::cerr << ex.what() << "\n";
         }
+    }
+
+    if (servers.empty()) {
+        std::cerr << "ERROR: No valid servers configured; cannot accept client connections.\n";
+        return 1;
     }
 
     for (SocketServer* server: servers) {
