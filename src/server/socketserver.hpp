@@ -12,7 +12,7 @@ namespace CodecServer {
             virtual ~SocketServer();
             virtual void readConfig(const std::map<std::string, std::string>& config) {};
             virtual int getSocket() = 0;
-            virtual int bind() = 0;
+            virtual void bind() = 0;
             virtual void setupSocket();
             virtual void start();
             void stop();

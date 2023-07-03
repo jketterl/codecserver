@@ -16,22 +16,26 @@ void TcpServer::readConfig(const std::map<std::string, std::string>& config) {
     }
 }
 
-int Tcp4Server::bind() {
+void Tcp4Server::bind() {
     sockaddr_in addr {};
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
     addr.sin_addr.s_addr = inet_addr(bindAddr.c_str());
-    return ::bind(sock, (sockaddr*) &addr, sizeof(addr));
+    if (::bind(sock, (sockaddr*) &addr, sizeof(addr)) != 0) {
+        throw std::runtime_error("bind error: " + std::string(strerror(errno)));
+    }
 }
 
-int Tcp6Server::bind() {
+void Tcp6Server::bind() {
     sockaddr_in6 addr {};
     memset(&addr, 0, sizeof(addr));
     addr.sin6_family = AF_INET6;
     addr.sin6_port = htons(port);
     inet_pton(AF_INET6, bindAddr.c_str(), &addr.sin6_addr);
-    return ::bind(sock, (sockaddr*) &addr, sizeof(addr));
+    if (::bind(sock, (sockaddr*) &addr, sizeof(addr)) != 0) {
+        throw std::runtime_error("bind error: " + std::string(strerror(errno)));
+    }
 }
 
 int Tcp4Server::getSocket() {

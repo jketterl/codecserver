@@ -9,9 +9,9 @@ namespace CodecServer {
         public:
             UnixDomainSocketServer(): SocketServer() {}
             void readConfig(const std::map<std::string, std::string>& config) override;
-            int clearSocket();
+            void clearSocket();
             int getSocket() override;
-            int bind() override;
+            void bind() override;
             void run() override;
         private:
             std::string socket_path = "/tmp/codecserver.sock";

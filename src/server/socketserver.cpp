@@ -12,29 +12,18 @@ SocketServer::~SocketServer() {
 void SocketServer::setupSocket() {
     sock = getSocket();
     if (sock == -1) {
-        std::cerr << "socket error: " << strerror(errno) << "\n";
-        return;
+        throw std::runtime_error("socket error: " + std::string(strerror(errno)));
     }
 
     int reuse = 1;
     if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(int)) == -1) {
-        std::cerr << "error setting socket options: " << strerror(errno) << "\n";
-        return;
+        throw std::runtime_error("error setting socket options: " + std::string(strerror(errno)));
     }
 
-    int rc = bind();
-    if (rc < 0) {
-        if (rc == -1) {
-            std::cerr << "bind error: " << strerror(errno) << "\n";
-        } else {
-            std::cerr << "bind error: unknown\n";
-        }
-        return;
-    }
+    bind();
 
     if (listen(sock, 1) == -1) {
-        std::cerr << "listen error: " << strerror(errno) << "\n";
-        return;
+        throw std::runtime_error("listen error: " + std::string(strerror(errno)));
     }
 }
 

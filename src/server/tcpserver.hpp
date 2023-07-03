@@ -19,7 +19,7 @@ namespace CodecServer {
             Tcp4Server(): TcpServer() {
                 bindAddr = "0.0.0.0";
             }
-            int bind() override;
+            void bind() override;
             int getSocket() override;
     };
 
@@ -28,7 +28,7 @@ namespace CodecServer {
             Tcp6Server(): TcpServer() {
                 bindAddr = "::";
             }
-            int bind() override;
+            void bind() override;
             int getSocket() override;
     };
 
