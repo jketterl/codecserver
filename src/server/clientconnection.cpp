@@ -113,7 +113,7 @@ void ClientConnection::processMessage(SpeechData* data) {
 }
 
 void ClientConnection::processMessage(Renegotiation* reneg) {
-    Response* response = new Response();
+    auto response = new Response();
     try {
         session->renegotiate(reneg->settings());
         response->set_result(Response_Status_OK);
@@ -143,7 +143,7 @@ void ClientConnection::processMessage(Request* request) {
         if (session != nullptr) break;
     }
 
-    Response* response = new Response();
+    auto response = new Response();
 
     if (session == nullptr) {
         response->set_result(Response_Status_ERROR);
@@ -167,9 +167,9 @@ void ClientConnection::processMessage(Request* request) {
 
 void ClientConnection::processMessage(Check* check) {
     std::cout << "check for codec: " << check->codec() << "\n";
-    Response* response = new Response();
+    auto response = new Response();
 
-    if (!Registry::get()->findDevices(check->codec()).size()) {
+    if (Registry::get()->findDevices(check->codec()).empty()) {
         response->set_result(Response_Status_ERROR);
         response->set_message("no device available");
     } else {
@@ -194,7 +194,7 @@ void ClientConnection::read() {
             break;
         }
         // TODO: we don't know if it's actually speech data, typing is lost in Session::read()
-        SpeechData* data = new SpeechData();
+        auto data = new SpeechData();
         data->set_data(std::string(output, size));
         if (!sendMessage(data)) {
             run = false;

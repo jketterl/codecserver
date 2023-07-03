@@ -9,11 +9,11 @@ namespace CodecServer {
 
     class ServerConfig: public Config {
         public:
-            ServerConfig(std::string path): Config(path) {};
+            explicit ServerConfig(std::string path): Config(path) {};
             std::vector<std::string> getDevices();
-            std::map<std::string, std::string> getDeviceConfig(std::string key);
+            std::map<std::string, std::string> getDeviceConfig(const std::string& key);
             std::vector<std::string> getDrivers();
-            std::map<std::string, std::string> getDriverConfig(std::string key);
+            std::map<std::string, std::string> getDriverConfig(const std::string& key);
     };
 
 }

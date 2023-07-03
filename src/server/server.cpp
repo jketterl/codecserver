@@ -2,7 +2,6 @@
 #include "scanner.hpp"
 #include "serverconfig.hpp"
 #include "registry.hpp"
-#include "driver.hpp"
 #include "unixdomainsocketserver.hpp"
 #include "tcpserver.hpp"
 #include <iostream>
@@ -35,13 +34,13 @@ int Server::main(int argc, char** argv) {
     Scanner scanner;
     scanner.scanModules();
 
-    for (std::string driver: config.getDrivers()) {
+    for (const std::string& driver: config.getDrivers()) {
         std::map<std::string, std::string> args = config.getDriverConfig(driver);
         Registry::get()->configureDriver(driver, args);
     }
 
     std::cout << "loading devices from configuration...\n";
-    for (std::string device: config.getDevices()) {
+    for (const std::string& device: config.getDevices()) {
         std::map<std::string, std::string> args = config.getDeviceConfig(device);
         Registry::get()->loadDeviceFromConfig(args);
     }
@@ -50,7 +49,7 @@ int Server::main(int argc, char** argv) {
     Registry::get()->autoDetectDevices();
     std::cout << "device scan complete.\n";
 
-    for (std::string type: config.getServers()) {
+    for (const std::string& type: config.getServers()) {
         std::map<std::string, std::string> args = config.getServerConfig(type);
         SocketServer* server = nullptr;
         if (type == "unixdomainsockets") {

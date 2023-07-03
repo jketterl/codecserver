@@ -15,7 +15,7 @@ namespace CodecServer {
             virtual int bind() = 0;
             virtual void setupSocket();
             virtual void start();
-            virtual void stop();
+            void stop();
             virtual void run();
             virtual void join();
         protected:

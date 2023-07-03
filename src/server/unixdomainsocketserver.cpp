@@ -1,6 +1,5 @@
 #include "unixdomainsocketserver.hpp"
 #include <iostream>
-#include <cstring>
 #include <sys/un.h>
 #include <sys/stat.h>
 #include <unistd.h>

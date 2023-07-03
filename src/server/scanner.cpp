@@ -7,7 +7,7 @@ using namespace CodecServer;
 
 void Scanner::scanModules() {
     std::cout << "now scanning for modules...\n";
-    for (std::string lib : getLibs()) {
+    for (const std::string& lib : getLibs()) {
         loadLibrary(lib);
     }
 }
@@ -20,7 +20,7 @@ std::vector<std::string> Scanner::getSearchPaths() {
 
 std::vector<std::string> Scanner::getLibs() {
     std::vector<std::string> libs;
-    for (std::string searchPath : getSearchPaths()) {
+    for (const std::string& searchPath : getSearchPaths()) {
         glob_t globResults;
         std::string pattern = searchPath + "/*.so";
         int ret = glob(pattern.c_str(), 0, NULL, &globResults);
@@ -39,7 +39,7 @@ std::vector<std::string> Scanner::getLibs() {
     return libs;
 }
 
-void Scanner::loadLibrary(std::string path) {
+void Scanner::loadLibrary(const std::string& path) {
     void* handle = dlopen(path.c_str(), RTLD_LAZY);
     if (handle == NULL) {
         std::cerr << "dlopen() failed: " << dlerror() << "\n";
