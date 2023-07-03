@@ -1,5 +1,8 @@
 codecserver (0.3.0) UNRELEASED; urgency=low
 
+  * Introduce a protocol version field in the handshake
+  * Fixes handling of channel data, thus allowing to encode voice data
+
  -- Jakob Ketterl <jakob.ketterl@gmx.de>  Thu, 16 Jun 2022 17:50:00 +0000
 
 codecserver (0.2.0) bullseye jammy; urgency=low
