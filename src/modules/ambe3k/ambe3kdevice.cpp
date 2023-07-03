@@ -222,13 +222,12 @@ void Device::writePacket(Packet* packet) {
 void Device::receivePacket(Packet* packet) {
     auto speech = dynamic_cast<SpeechPacket*>(packet);
     if (speech != nullptr) {
-        // fallback for single-channel chips that don't respond with a channel number
-        unsigned int channelNo = 0;
-        if (speech->hasChannel()) {
-            channelNo = speech->getChannel();
-            assert(channelNo < channels.size());
-        }
-        channels[channelNo]->receive(speech);
+        channels[getChannelNumber(packet)]->receive(speech);
+        return;
+    }
+    auto channel = dynamic_cast<ChannelPacket*>(packet);
+    if (channel != nullptr) {
+        channels[getChannelNumber(channel)]->receive(channel);
         return;
     }
     auto control = dynamic_cast<ControlPacket*>(packet);
@@ -251,6 +250,16 @@ void Device::receivePacket(Packet* packet) {
     }
     delete packet;
     std::cerr << "unexpected packet received from stick\n";
+}
+
+int Device::getChannelNumber(Packet* packet) {
+    // fallback for single-channel chips that don't respond with a channel number
+    if (!packet->hasChannel()) return 0;
+    // multi-channel devices will have the field set
+    int channelNo = packet->getChannel();
+    // check to avoid goind beyond array limits
+    assert(channelNo < channels.size());
+    return channelNo;
 }
 
 void Device::onQueueError(std::string message) {

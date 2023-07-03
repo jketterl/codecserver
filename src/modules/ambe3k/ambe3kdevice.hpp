@@ -31,6 +31,7 @@ namespace Ambe3K {
             void init();
             void createChannels(std::string prodId);
             void createChannels(unsigned int num);
+            int getChannelNumber(Ambe3K::Protocol::Packet* packet);
             int fd;
             std::vector<Channel*> channels;
             BlockingQueue<Ambe3K::Protocol::Packet>* queue;
