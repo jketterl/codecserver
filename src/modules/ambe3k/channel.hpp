@@ -31,7 +31,7 @@ namespace Ambe3K {
             bool busy = false;
             Device* device;
             unsigned char index;
-            unsigned char codecIndex;
+            unsigned char codecIndex = 0;
             short* ratep = nullptr;
             BlockingQueue<Ambe3K::Protocol::Packet>* outQueue = nullptr;
     };

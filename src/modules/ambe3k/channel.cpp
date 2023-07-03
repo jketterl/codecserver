@@ -92,14 +92,14 @@ size_t Channel::read(char* output) {
 
     // TODO: this loses the typing. callers of read() will not know if the response is channel or speech data.
 
-    SpeechPacket* speech = dynamic_cast<SpeechPacket*>(packet);
+    auto speech = dynamic_cast<SpeechPacket*>(packet);
     if (speech != nullptr) {
         size_t size = speech->getSpeechData((short*) output);
         delete speech;
         return size;
     }
 
-    ChannelPacket* channel = dynamic_cast<ChannelPacket*>(packet);
+    auto channel = dynamic_cast<ChannelPacket*>(packet);
     if (channel != nullptr) {
         size_t size = channel->getChannelData(output);
         delete channel;

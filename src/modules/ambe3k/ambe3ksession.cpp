@@ -75,11 +75,11 @@ void Ambe3KSession::renegotiate(CodecServer::proto::Settings settings) {
     }
 }
 
-short* Ambe3KSession::parseRatePString(std::string input) {
+short* Ambe3KSession::parseRatePString(const std::string& input) {
     if (input.length() != 29) return nullptr;
     std::vector<std::string> parts;
     size_t pos_start = 0, pos_end;
-    while ((pos_end = input.find(":", pos_start)) != std::string::npos) {
+    while ((pos_end = input.find(':', pos_start)) != std::string::npos) {
         parts.push_back(input.substr(pos_start, pos_end - pos_start));
         pos_start = pos_end + 1;
     }
@@ -87,7 +87,7 @@ short* Ambe3KSession::parseRatePString(std::string input) {
 
     if (parts.size() != 6) return nullptr;
 
-    short* data = (short*) malloc(sizeof(short) * 6);
+    auto data = (short*) malloc(sizeof(short) * 6);
     for (int i = 0; i < parts.size(); i++) {
         std::string part = parts[i];
         if (part.length() != 4) {

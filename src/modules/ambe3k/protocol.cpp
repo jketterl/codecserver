@@ -75,7 +75,7 @@ size_t VersionStringResponseField::getLength() {
 }
 
 std::string VersionStringResponseField::getVersionId() {
-    return std::string(data + 1, 48);
+    return { data + 1, 48 };
 }
 
 ChannelField::ChannelField(char* data): Field(data) {}
@@ -227,7 +227,7 @@ Packet::~Packet() {
 }
 
 Packet* Packet::parse(char* data, size_t size) {
-    Packet* p = nullptr;
+    Packet* p;
     char type = data[3];
     if (type == AMBE3K_TYPE_CONTROL) {
         p = new ControlPacket(data, size);

@@ -26,7 +26,7 @@ Device* Driver::buildFromConfiguration(std::map<std::string, std::string> config
     unsigned int baudrate;
     try {
         baudrate = stoul(config["baudrate"]);
-    } catch (std::invalid_argument) {
+    } catch (const std::invalid_argument&) {
         std::cerr << "unable to create ambe3k device: cannot parse baudrate\n";
         return nullptr;
     }

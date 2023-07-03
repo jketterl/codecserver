@@ -1,7 +1,5 @@
 #include "ambe3kregistry.hpp"
 
-#include <utility>
-
 using namespace Ambe3K;
 
 Registry* Registry::get() {

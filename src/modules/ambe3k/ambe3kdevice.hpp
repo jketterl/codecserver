@@ -18,21 +18,21 @@ namespace Ambe3K {
 
     class Device: public CodecServer::Device {
         public:
-            Device(std::string tty, unsigned int baudRate);
+            Device(const std::string& tty, unsigned int baudRate);
             ~Device() override;
             std::vector<std::string> getCodecs() override;
             CodecServer::Session* startSession(CodecServer::proto::Request* request) override;
             void writePacket(Ambe3K::Protocol::Packet* packet);
             void receivePacket(Ambe3K::Protocol::Packet* packet);
-            void onQueueError(std::string message);
+            void onQueueError(const std::string& message);
         private:
-            void open(std::string tty, unsigned int baudRate);
+            void open(const std::string& tty, unsigned int baudRate);
             speed_t convertBaudrate(unsigned int baudRate);
             void init();
-            void createChannels(std::string prodId);
+            void createChannels(const std::string& prodId);
             void createChannels(unsigned int num);
             int getChannelNumber(Ambe3K::Protocol::Packet* packet);
-            int fd;
+            int fd = 0;
             std::vector<Channel*> channels;
             BlockingQueue<Ambe3K::Protocol::Packet>* queue;
             QueueWorker* worker;

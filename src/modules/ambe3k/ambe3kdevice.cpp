@@ -2,7 +2,6 @@
 #include "registry.hpp"
 #include "ambe3ksession.hpp"
 #include <iostream>
-#include <cstring>
 #include <fcntl.h>
 #include <stdexcept>
 
@@ -12,7 +11,7 @@ using namespace Protocol;
 
 using CodecServer::DeviceException;
 
-Device::Device(std::string tty, unsigned int baudRate) {
+Device::Device(const std::string& tty, unsigned int baudRate) {
     open(tty, baudRate);
     init();
     queue = new BlockingQueue<Ambe3K::Protocol::Packet>(10);
@@ -53,7 +52,7 @@ CodecServer::Session* Device::startSession(CodecServer::proto::Request* request)
     return nullptr;
 }
 
-void Device::open(std::string ttyname, unsigned int baudRate) {
+void Device::open(const std::string& ttyname, unsigned int baudRate) {
     speed_t baud = convertBaudrate(baudRate);
 
     fd = ::open(ttyname.c_str(), O_RDWR | O_NOCTTY /*| O_SYNC*/);
@@ -61,7 +60,7 @@ void Device::open(std::string ttyname, unsigned int baudRate) {
         throw DeviceException("could not open TTY", errno);
     }
 
-    struct termios tty;
+    struct termios tty{};
     if (tcgetattr(fd, &tty) != 0) {
         throw DeviceException("tcgetattr error", errno);
     }
@@ -193,7 +192,7 @@ void Device::init() {
     delete versionString;
 }
 
-void Device::createChannels(std::string prodId) {
+void Device::createChannels(const std::string& prodId) {
     if (prodId.substr(0, 8) == "AMBE3000") {
         std::cerr << "detected AMBE3000, creating one channel\n";
         createChannels(1);
@@ -210,7 +209,7 @@ void Device::createChannels(std::string prodId) {
 }
 
 void Device::createChannels(unsigned int num_channels) {
-    for (unsigned char i = 0; i < num_channels; i++) {
+    for (unsigned int i = 0; i < num_channels; i++) {
         channels.push_back(new Channel(this, i));
     }
 }
@@ -262,7 +261,7 @@ int Device::getChannelNumber(Packet* packet) {
     return channelNo;
 }
 
-void Device::onQueueError(std::string message) {
+void Device::onQueueError(const std::string& message) {
     std::cerr << "ambe3k queue worker reported error: " << message << "\n";
     CodecServer::Registry::get()->unregisterDevice(this);
 }

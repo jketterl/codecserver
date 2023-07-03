@@ -7,7 +7,7 @@
 
 class QueueException: public std::runtime_error {
     public:
-        QueueException(const char* msg): runtime_error(msg) {}
+        explicit QueueException(const char* msg): runtime_error(msg) {}
 };
 
 class QueueFullException: public QueueException {

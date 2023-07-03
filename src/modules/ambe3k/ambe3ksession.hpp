@@ -21,7 +21,7 @@ namespace Ambe3K {
             void renegotiate(Settings settings) override;
         private:
             Channel* channel;
-            short* parseRatePString(std::string input);
+            short* parseRatePString(const std::string& input);
     };
 
 }
