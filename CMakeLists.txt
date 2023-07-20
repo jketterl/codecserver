@@ -15,7 +15,11 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/")
 include(GNUInstallDirs)
 
 find_package(Threads REQUIRED)
-find_package(protobuf REQUIRED CONFIG)
+find_package(protobuf CONFIG)
+if (NOT protobuf_FOUND)
+    include(FindProtobuf)
+    find_package(Protobuf REQUIRED)
+endif()
 find_package(udev REQUIRED)
 
 SET(CMAKE_CXX_FLAGS_DEBUG "-g -O3 -rdynamic")
