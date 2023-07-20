@@ -8,15 +8,14 @@ project (codecserver VERSION 0.3.0)
 add_definitions(-DVERSION="${PROJECT_VERSION}-dev")
 
 enable_language(CXX)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/")
 
 include(GNUInstallDirs)
-include(FindProtobuf)
 
 find_package(Threads REQUIRED)
-find_package(Protobuf 3.0 REQUIRED)
+find_package(protobuf REQUIRED CONFIG)
 find_package(udev REQUIRED)
 
 SET(CMAKE_CXX_FLAGS_DEBUG "-g -O3 -rdynamic")

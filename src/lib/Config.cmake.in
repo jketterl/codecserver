@@ -3,6 +3,6 @@
 include("${CMAKE_CURRENT_LIST_DIR}/CodecServerTargets.cmake")
 
 include(CMakeFindDependencyMacro)
-find_dependency(Protobuf 3.0)
+find_dependency(protobuf CONFIG)
 
 check_required_components(CodecServer)
