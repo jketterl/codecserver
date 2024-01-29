@@ -42,7 +42,10 @@ bool Connection::sendMessage(google::protobuf::Message* message) {
 google::protobuf::Any* Connection::receiveMessage() {
     CodedInputStream* is = new CodedInputStream(inStream);
     uint64_t size;
-    is->ReadVarint64(&size);
+    if (!is->ReadVarint64(&size)) {
+        delete is;
+        return nullptr;
+    }
     if (size == 0) {
         delete is;
         return nullptr;
