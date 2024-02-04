@@ -21,6 +21,10 @@ ClientConnection::ClientConnection(int sock): Connection(sock) {
     delete this;
 }
 
+ClientConnection::~ClientConnection() {
+    stopSession();
+}
+
 void ClientConnection::handshake() {
     GOOGLE_PROTOBUF_VERIFY_VERSION;
     Handshake handshake;

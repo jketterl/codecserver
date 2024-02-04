@@ -14,6 +14,7 @@ namespace CodecServer {
     class ClientConnection: public Connection {
         public:
             explicit ClientConnection(int sock);
+            ~ClientConnection() override;
         private:
             void handshake();
             void loop();

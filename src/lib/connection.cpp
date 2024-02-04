@@ -2,6 +2,7 @@
 #include "protocol.hpp"
 #include "proto/data.pb.h"
 #include <unistd.h>
+#include <poll.h>
 #include <netinet/in.h>
 #include <google/protobuf/io/coded_stream.h>
 
@@ -17,8 +18,19 @@ Connection::Connection(int sock) {
 }
 
 Connection::~Connection() {
-    delete inStream;
-    ::close(sock);
+    close();
+}
+
+void Connection::close() {
+    int s = sock;
+    sock = -1;
+    auto old = inStream;
+    inStream = nullptr;
+    if (s != -1) {
+        ::shutdown(s, SHUT_RDWR);
+        ::close(s);
+    }
+    delete old;
 }
 
 bool Connection::sendMessage(google::protobuf::Message* message) {
@@ -40,7 +52,40 @@ bool Connection::sendMessage(google::protobuf::Message* message) {
 }
 
 google::protobuf::Any* Connection::receiveMessage() {
-    CodedInputStream* is = new CodedInputStream(inStream);
+    // this whole block is mostly just about making sure that data is actually
+    // available on the socket, while exiting early when any conditions arise on
+    // the socket. Normally, this shouldn't be necessary, but external
+    // observation shows that the CodecInputStream does not always seem to
+    // handle socket errors and / or EOF events correctly.
+    int s;
+    while ((s = sock) != -1) {
+        pollfd pfd = {
+            .fd = s,
+            .events = POLLIN
+        };
+
+        int rc = poll(&pfd, 1, 10000);
+        if (rc == -1) {
+            // poll failed
+            return nullptr;
+        }
+        if (pfd.revents & POLLERR) {
+            // something wrong about the socket
+            return nullptr;
+        }
+        if (pfd.revents & POLLIN) {
+            // we actually have some data
+            break;
+        }
+    }
+
+    auto stream = inStream;
+
+    if (stream == nullptr) {
+        return nullptr;
+    }
+
+    CodedInputStream* is = new CodedInputStream(stream);
     uint64_t size;
     if (!is->ReadVarint64(&size)) {
         delete is;

@@ -18,8 +18,10 @@ namespace CodecServer {
             bool sendChannelData(char* buffer, size_t size);
             bool sendSpeechData(char* buffer, size_t size);
             bool isCompatible(uint32_t protocolVersion);
+            // use to unblock potentially blocking calls before ~Connection()
+            void close();
         private:
-            int sock;
+            int sock = -1;
             FileInputStream* inStream;
     };
 
